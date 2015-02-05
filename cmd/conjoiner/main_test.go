@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -19,9 +22,11 @@ func (t TestAuthMethod) String() string {
 	return "god"
 }
 
-type mockFileInfo struct{}
+type mockFileInfo struct {
+	name string
+}
 
-func (m mockFileInfo) Name() string       { return "foo" }
+func (m mockFileInfo) Name() string       { return m.name }
 func (m mockFileInfo) Size() int64        { return 1 }
 func (m mockFileInfo) Mode() os.FileMode  { return os.ModeDir }
 func (m mockFileInfo) ModTime() time.Time { return time.Time{} }
@@ -104,4 +109,55 @@ func TestAnnotateShows(t *testing.T) {
 	show := shows[mockFileInfo{}]
 	assert.Len(t, show.seasons, 1)
 	assert.Len(t, show.seasons[0].episodes, 10)
+}
+
+func TestShowIdex(t *testing.T) {
+	copyR("testdata/Videos_template", "testdata/Videos")
+	defer os.RemoveAll("testdata/Videos")
+
+	shows := map[os.FileInfo]FullShow{
+		mockFileInfo{name: "testdata/Videos/show_one"}: FullShow{show: trakt.Show{Title: "Show One"}},
+		mockFileInfo{name: "testdata/Videos/show_two"}: FullShow{show: trakt.Show{Title: "Show two"}},
+	}
+
+	fmt.Printf("shows %+v\n", shows)
+}
+
+func copyR(src, dest string) {
+	filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		target := strings.Replace(path, src, dest, -1)
+		if info.IsDir() {
+			os.MkdirAll(target, 0755)
+		} else {
+			copyFile(path, target)
+		}
+		return nil
+	})
+}
+
+func copyFile(source string, dest string) (err error) {
+	sourcefile, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+
+	defer sourcefile.Close()
+
+	destfile, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+
+	defer destfile.Close()
+
+	_, err = io.Copy(destfile, sourcefile)
+	if err == nil {
+		sourceinfo, err := os.Stat(source)
+		if err != nil {
+			err = os.Chmod(dest, sourceinfo.Mode())
+		}
+
+	}
+
+	return
 }

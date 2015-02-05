@@ -98,7 +98,7 @@ func (t Trakt) addEpisodes(show *FullShow) {
 	}
 }
 
-func main() {
+func lookup() map[os.FileInfo]FullShow {
 	t := Trakt{
 		trakt.NewClient(
 			"01045164ed603042b53acf841b590f0e7b728dbff319c8d128f8649e2427cbe9",
@@ -111,14 +111,28 @@ func main() {
 	shows := t.turnShowResultsIntoShows(searchResults)
 
 	t.addSeasonsAndEpisodesToShows(shows)
+
+	return shows
+}
+
+func main() {
+	shows := lookup()
+	fmt.Printf("shows %+v\n", shows)
+
+	//writeShowIndex(shows)
+	//writeIndividualShows(shows)
+	//writeSeasonIndex(shows)
+	//writeIndividualSeasons(show)
+	//writeEpisodeIndex(show)
+	//writeIndividualEpisodes(show)
 }
 
 ///movies.json
 ///shows.json
-///shows/suits.json //<= contains trakt.Show value
-/////shows/suits/seasons.json //<= contains []trakt.Season
-///shows/suits/seasons/1.json //<= contains trakt.Season // Does that make sense?
+///shows/suits.json
+/////shows/suits/seasons.json
+///shows/suits/seasons/1.json
 ///shows/suits/seasons/2.json
-/////shows/suits/seasons/1/episodes.json //<= contains []trakt.Episode
-///shows/suits/seasons/1/episodes/1.json //<= contains trakt.Episode
+/////shows/suits/seasons/1/episodes.json
+///shows/suits/seasons/1/episodes/1.json
 ///shows/suits/seasons/1/episodes/1.mp4
