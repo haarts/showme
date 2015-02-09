@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -112,10 +113,49 @@ func TestAnnotateShows(t *testing.T) {
 	assert.Len(t, show.seasons[0].episodes, 10)
 }
 
-func TestShowIndex(t *testing.T) {
+func TestShowFiles(t *testing.T) {
 	copyR("testdata/Videos_template", "testdata/Videos")
 	defer os.RemoveAll("testdata/Videos")
+	err := createJSONs()
+	require.NoError(t, err)
 
+	createdJSONs := []string{
+		"testdata/Videos/shows.json",
+		"testdata/Videos/Show One.json",
+		"testdata/Videos/show1/seasons.json",
+		"testdata/Videos/show1/1.json",
+		"testdata/Videos/show1/2.json",
+		"testdata/Videos/show1/3.json",
+		"testdata/Videos/show1/1/episodes.json",
+		"testdata/Videos/show1/1/Episode 1.json",
+		"testdata/Videos/show1/1/Episode 2.json",
+		"testdata/Videos/Show Two.json",
+	}
+
+	for _, j := range createdJSONs {
+		_, err := os.Stat(j)
+		assert.Nil(t, err, "%s should exist", j)
+	}
+}
+
+func TestURLPointers(t *testing.T) {
+	copyR("testdata/Videos_template", "testdata/Videos")
+	defer os.RemoveAll("testdata/Videos")
+	err := createJSONs()
+	require.NoError(t, err)
+
+	data, err := ioutil.ReadFile("testdata/Videos/shows.json")
+	require.NoError(t, err)
+
+	var shows []FullShow
+	err = json.Unmarshal(data, &shows)
+	require.NoError(t, err)
+
+	assert.Equal(t, "testdata/Videos/Show One.json", shows[0].URL)
+	assert.Equal(t, "testdata/Videos/Show Two.json", shows[1].URL)
+}
+
+func createJSONs() error {
 	shows := map[os.FileInfo]FullShow{
 		mockFileInfo{name: "testdata/Videos/show1"}: FullShow{
 			show: trakt.Show{Title: "Show One"},
@@ -146,26 +186,7 @@ func TestShowIndex(t *testing.T) {
 	}
 
 	c := newConjoiner("testdata/Videos")
-	err := c.createJSONs(shows)
-	require.Nil(t, err)
-
-	createdJSONs := []string{
-		"testdata/Videos/shows.json",
-		"testdata/Videos/Show One.json",
-		"testdata/Videos/show1/seasons.json",
-		"testdata/Videos/show1/1.json",
-		"testdata/Videos/show1/2.json",
-		"testdata/Videos/show1/3.json",
-		"testdata/Videos/show1/1/episodes.json",
-		"testdata/Videos/show1/1/Episode 1.json",
-		"testdata/Videos/show1/1/Episode 2.json",
-		"testdata/Videos/Show Two.json",
-	}
-
-	for _, j := range createdJSONs {
-		_, err := os.Stat(j)
-		assert.Nil(t, err, "%s should exist", j)
-	}
+	return c.createJSONs(shows)
 }
 
 func copyR(src, dest string) {

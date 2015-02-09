@@ -73,6 +73,7 @@ type season struct {
 type FullShow struct {
 	show    trakt.Show
 	seasons []season
+	URL     string `json:"URL"`
 }
 
 func (t Trakt) turnDirsIntoShows(dirs []os.FileInfo) map[os.FileInfo]trakt.ShowResult {
@@ -218,16 +219,18 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]FullShow) error {
 		}
 	}
 
-	var showsIndex []trakt.Show
+	var showIndex []FullShow
 	for dir, show := range shows {
-		showsIndex = append(showsIndex, show.show)
-		err := writeObject(show.show, path.Join(dir.Name(), "..", show.show.Title+".json"))
+		location := path.Join(dir.Name(), "..", show.show.Title+".json")
+		err := writeObject(show.show, location)
 		if err != nil {
 			return err
 		}
+		show.URL = location
+		showIndex = append(showIndex, show)
 	}
 
-	err := writeObject(showsIndex, path.Join(c.root, "shows.json"))
+	err := writeObject(showIndex, path.Join(c.root, "shows.json"))
 	if err != nil {
 		return err
 	}
@@ -238,12 +241,5 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]FullShow) error {
 func main() {
 	c := newConjoiner("/tmp/Videos")
 	shows := c.lookup()
-	fmt.Printf("shows %+v\n", shows)
-
-	//writeShowIndex(shows)
-	//writeIndividualShows(shows)
-	//writeSeasonIndex(shows)
-	//writeIndividualSeasons(show)
-	//writeEpisodeIndex(show)
-	//writeIndividualEpisodes(show)
+	c.createJSONs(shows)
 }
