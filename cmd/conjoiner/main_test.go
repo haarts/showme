@@ -151,8 +151,9 @@ func TestShowURLs(t *testing.T) {
 	err = json.Unmarshal(data, &shows)
 	require.NoError(t, err)
 
-	assert.Equal(t, "testdata/Videos/Show One.json", shows[0].URL)
-	assert.Equal(t, "testdata/Videos/Show Two.json", shows[1].URL)
+	URLs := []string{shows[0].URL, shows[1].URL}
+	assert.Contains(t, URLs, "testdata/Videos/Show One.json")
+	assert.Contains(t, URLs, "testdata/Videos/Show Two.json")
 }
 
 func TestSeasonURLs(t *testing.T) {
@@ -168,8 +169,9 @@ func TestSeasonURLs(t *testing.T) {
 	err = json.Unmarshal(data, &seasons)
 	require.NoError(t, err)
 
-	assert.Equal(t, "testdata/Videos/show1/1.json", seasons[0].URL)
-	assert.Equal(t, "testdata/Videos/show1/2.json", seasons[1].URL)
+	URLs := []string{seasons[0].URL, seasons[1].URL}
+	assert.Contains(t, URLs, "testdata/Videos/show1/1.json")
+	assert.Contains(t, URLs, "testdata/Videos/show1/2.json")
 }
 
 func createJSONs() error {
