@@ -14,6 +14,7 @@ import (
 
 	trakt "github.com/42minutes/go-trakt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type TestAuthMethod struct{}
@@ -111,16 +112,60 @@ func TestAnnotateShows(t *testing.T) {
 	assert.Len(t, show.seasons[0].episodes, 10)
 }
 
-func TestShowIdex(t *testing.T) {
+func TestShowIndex(t *testing.T) {
 	copyR("testdata/Videos_template", "testdata/Videos")
 	defer os.RemoveAll("testdata/Videos")
 
 	shows := map[os.FileInfo]FullShow{
-		mockFileInfo{name: "testdata/Videos/show_one"}: FullShow{show: trakt.Show{Title: "Show One"}},
-		mockFileInfo{name: "testdata/Videos/show_two"}: FullShow{show: trakt.Show{Title: "Show two"}},
+		mockFileInfo{name: "testdata/Videos/show1"}: FullShow{
+			show: trakt.Show{Title: "Show One"},
+			seasons: []season{
+				{
+					// You need to drop the package name to address the embedded field.
+					Season: trakt.Season{Number: 1},
+					episodes: []trakt.Episode{
+						{
+							Title: "Episode 1",
+						},
+						{
+							Title: "Episode 2",
+						},
+					},
+				},
+				{
+					Season: trakt.Season{Number: 2},
+				},
+				{
+					Season: trakt.Season{Number: 3},
+				},
+			},
+		},
+		mockFileInfo{name: "testdata/Videos/show2"}: FullShow{
+			show: trakt.Show{Title: "Show Two"},
+		},
 	}
 
-	fmt.Printf("shows %+v\n", shows)
+	c := newConjoiner("testdata/Videos")
+	err := c.createJSONs(shows)
+	require.Nil(t, err)
+
+	createdJSONs := []string{
+		"testdata/Videos/shows.json",
+		"testdata/Videos/Show One.json",
+		"testdata/Videos/show1/seasons.json",
+		"testdata/Videos/show1/1.json",
+		"testdata/Videos/show1/2.json",
+		"testdata/Videos/show1/3.json",
+		"testdata/Videos/show1/1/episodes.json",
+		"testdata/Videos/show1/1/Episode 1.json",
+		"testdata/Videos/show1/1/Episode 2.json",
+		"testdata/Videos/Show Two.json",
+	}
+
+	for _, j := range createdJSONs {
+		_, err := os.Stat(j)
+		assert.Nil(t, err, "%s should exist", j)
+	}
 }
 
 func copyR(src, dest string) {
