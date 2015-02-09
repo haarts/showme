@@ -65,9 +65,14 @@ type Trakt struct {
 	*trakt.Client
 }
 
+type episode struct {
+	trakt.Episode
+	URL string `json:"URL"`
+}
+
 type season struct {
 	trakt.Season
-	episodes []trakt.Episode
+	episodes []episode
 	URL      string `json:"URL"`
 }
 
@@ -128,7 +133,9 @@ func (t Trakt) addEpisodes(show *FullShow) {
 	for k, season := range show.seasons {
 		episodes, response := t.Episodes().AllBySeason(show.show.IDs.Trakt, season.Number)
 		if response.Err == nil {
-			season.episodes = episodes
+			for _, e := range episodes {
+				season.episodes = append(season.episodes, episode{Episode: e})
+			}
 		}
 		show.seasons[k] = season
 	}
@@ -202,13 +209,19 @@ func (c conjoiner) showFunc(show FullShow) filepath.WalkFunc {
 			if err != nil {
 				return err
 			}
-			err = writeObject(season.episodes, path.Join(dir, "episodes.json"))
 
-			for _, episode := range season.episodes {
-				err = writeObject(episode, path.Join(dir, episode.Title+".json"))
+			for i, episode := range season.episodes {
+				location := path.Join(dir, episode.Title+".json")
+				err = writeObject(episode, location)
 				if err != nil {
 					return err
 				}
+				season.episodes[i].URL = location
+			}
+
+			err = writeObject(season.episodes, path.Join(dir, "episodes.json"))
+			if err != nil {
+				return err
 			}
 		}
 		return nil

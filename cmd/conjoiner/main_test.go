@@ -174,6 +174,24 @@ func TestSeasonURLs(t *testing.T) {
 	assert.Contains(t, URLs, "testdata/Videos/show1/2.json")
 }
 
+func TestEpisodeURLs(t *testing.T) {
+	copyR("testdata/Videos_template", "testdata/Videos")
+	defer os.RemoveAll("testdata/Videos")
+	err := createJSONs()
+	require.NoError(t, err)
+
+	data, err := ioutil.ReadFile("testdata/Videos/show1/1/episodes.json")
+	require.NoError(t, err)
+
+	var episodes []episode
+	err = json.Unmarshal(data, &episodes)
+	require.NoError(t, err)
+
+	URLs := []string{episodes[0].URL, episodes[1].URL}
+	assert.Contains(t, URLs, "testdata/Videos/show1/1/Episode 1.json")
+	assert.Contains(t, URLs, "testdata/Videos/show1/1/Episode 2.json")
+}
+
 func createJSONs() error {
 	shows := map[os.FileInfo]FullShow{
 		mockFileInfo{name: "testdata/Videos/show1"}: FullShow{
@@ -182,12 +200,12 @@ func createJSONs() error {
 				{
 					// You need to drop the package name to address the embedded field.
 					Season: trakt.Season{Number: 1},
-					episodes: []trakt.Episode{
+					episodes: []episode{
 						{
-							Title: "Episode 1",
+							Episode: trakt.Episode{Title: "Episode 1"},
 						},
 						{
-							Title: "Episode 2",
+							Episode: trakt.Episode{Title: "Episode 2"},
 						},
 					},
 				},
