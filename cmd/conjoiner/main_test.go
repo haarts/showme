@@ -138,7 +138,7 @@ func TestShowFiles(t *testing.T) {
 	}
 }
 
-func TestURLPointers(t *testing.T) {
+func TestShowURLs(t *testing.T) {
 	copyR("testdata/Videos_template", "testdata/Videos")
 	defer os.RemoveAll("testdata/Videos")
 	err := createJSONs()
@@ -153,6 +153,23 @@ func TestURLPointers(t *testing.T) {
 
 	assert.Equal(t, "testdata/Videos/Show One.json", shows[0].URL)
 	assert.Equal(t, "testdata/Videos/Show Two.json", shows[1].URL)
+}
+
+func TestSeasonURLs(t *testing.T) {
+	copyR("testdata/Videos_template", "testdata/Videos")
+	defer os.RemoveAll("testdata/Videos")
+	err := createJSONs()
+	require.NoError(t, err)
+
+	data, err := ioutil.ReadFile("testdata/Videos/show1/seasons.json")
+	require.NoError(t, err)
+
+	var seasons []season
+	err = json.Unmarshal(data, &seasons)
+	require.NoError(t, err)
+
+	assert.Equal(t, "testdata/Videos/show1/1.json", seasons[0].URL)
+	assert.Equal(t, "testdata/Videos/show1/2.json", seasons[1].URL)
 }
 
 func createJSONs() error {

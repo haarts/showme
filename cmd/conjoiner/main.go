@@ -68,6 +68,7 @@ type Trakt struct {
 type season struct {
 	trakt.Season
 	episodes []trakt.Episode
+	URL      string `json:"URL"`
 }
 
 type FullShow struct {
@@ -177,15 +178,18 @@ func (s FullShow) findSeason(number int) (season, error) {
 func (c conjoiner) showFunc(show FullShow) filepath.WalkFunc {
 	return func(dir string, info os.FileInfo, err error) error {
 		if c.isShowRoot(dir) {
-			err = writeObject(show.seasons, path.Join(dir, "seasons.json"))
-			if err != nil {
-				return err
-			}
-			for _, season := range show.seasons {
-				err := writeObject(season, path.Join(dir, strconv.Itoa(season.Number)+".json"))
+			for i, season := range show.seasons {
+				location := path.Join(dir, strconv.Itoa(season.Number)+".json")
+				err := writeObject(season, location)
 				if err != nil {
 					return err
 				}
+				show.seasons[i].URL = location
+			}
+
+			err = writeObject(show.seasons, path.Join(dir, "seasons.json"))
+			if err != nil {
+				return err
 			}
 		}
 		if c.isSeasonsRoot(dir) {
