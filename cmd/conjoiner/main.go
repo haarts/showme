@@ -283,7 +283,7 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]FullShow) error {
 }
 
 func main() {
-	c := newConjoiner("/tmp/Videos")
+	c := newConjoiner(os.Args[1])
 	shows := c.lookup()
 	c.createJSONs(shows)
 }
