@@ -252,8 +252,7 @@ func matchNameWithVideo(title string, dir string) string {
 		}
 	}
 
-	fmt.Printf("best %+v\n", best)
-	return best
+	return path.Join(dir, best)
 }
 
 func (c conjoiner) createJSONs(shows map[os.FileInfo]FullShow) error {
