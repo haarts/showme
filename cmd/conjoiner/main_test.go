@@ -190,6 +190,10 @@ func TestEpisodeURLs(t *testing.T) {
 	URLs := []string{episodes[0].URL, episodes[1].URL}
 	assert.Contains(t, URLs, "testdata/Videos/show1/1/Episode 1.json")
 	assert.Contains(t, URLs, "testdata/Videos/show1/1/Episode 2.json")
+
+	videoURLs := []string{episodes[0].VideoURL, episodes[1].VideoURL}
+	assert.Contains(t, videoURLs, "testdata/Videos/show1/1/s01e01_bar.mp4")
+	assert.Contains(t, videoURLs, "testdata/Videos/show1/1/s01e02_foo.mp4")
 }
 
 func createJSONs() error {

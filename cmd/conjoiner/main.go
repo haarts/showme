@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	trakt "github.com/42minutes/go-trakt"
+	"github.com/texttheater/golang-levenshtein/levenshtein"
 )
 
 type conjoiner struct {
@@ -67,19 +68,20 @@ type Trakt struct {
 
 type episode struct {
 	trakt.Episode
-	URL string `json:"URL"`
+	VideoURL string `json:"video_url"`
+	URL      string `json:"url"`
 }
 
 type season struct {
 	trakt.Season
 	episodes []episode
-	URL      string `json:"URL"`
+	URL      string `json:"url"`
 }
 
 type FullShow struct {
 	show    trakt.Show
 	seasons []season
-	URL     string `json:"URL"`
+	URL     string `json:"url"`
 }
 
 func (t Trakt) turnDirsIntoShows(dirs []os.FileInfo) map[os.FileInfo]trakt.ShowResult {
@@ -211,12 +213,17 @@ func (c conjoiner) showFunc(show FullShow) filepath.WalkFunc {
 			}
 
 			for i, episode := range season.episodes {
+				videoLocation := matchNameWithVideo(episode.Title, dir)
+				episode.VideoURL = videoLocation
+
 				location := path.Join(dir, episode.Title+".json")
+				episode.URL = location
+
 				err = writeObject(episode, location)
 				if err != nil {
 					return err
 				}
-				season.episodes[i].URL = location
+				season.episodes[i] = episode
 			}
 
 			err = writeObject(season.episodes, path.Join(dir, "episodes.json"))
@@ -226,6 +233,27 @@ func (c conjoiner) showFunc(show FullShow) filepath.WalkFunc {
 		}
 		return nil
 	}
+}
+func matchNameWithVideo(title string, dir string) string {
+	asRunes := []rune(title)
+	var best string
+	var bestScore = 999
+
+	fs, _ := ioutil.ReadDir(dir)
+	for _, f := range fs {
+		b, _ := regexp.MatchString(`\.mp4\z`, f.Name())
+		if !b {
+			continue
+		}
+		score := levenshtein.DistanceForStrings(asRunes, []rune(f.Name()), levenshtein.DefaultOptions)
+		if score < bestScore {
+			bestScore = score
+			best = f.Name()
+		}
+	}
+
+	fmt.Printf("best %+v\n", best)
+	return best
 }
 
 func (c conjoiner) createJSONs(shows map[os.FileInfo]FullShow) error {
