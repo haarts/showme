@@ -79,7 +79,7 @@ type season struct {
 }
 
 type FullShow struct {
-	show    trakt.Show
+	trakt.Show
 	seasons []season
 	URL     string `json:"url"`
 }
@@ -110,7 +110,7 @@ func (t Trakt) turnShowResultsIntoShows(showResults map[os.FileInfo]trakt.ShowRe
 			continue
 		}
 
-		shows[dir] = FullShow{show: *result}
+		shows[dir] = FullShow{Show: *result}
 	}
 
 	return shows
@@ -125,7 +125,7 @@ func (t Trakt) addSeasonsAndEpisodesToShows(shows map[os.FileInfo]FullShow) {
 }
 
 func (t Trakt) addSeasons(show *FullShow) {
-	seasons, response := t.Seasons().All(show.show.IDs.Trakt)
+	seasons, response := t.Seasons().All(show.IDs.Trakt)
 	if response.Err == nil {
 		for _, s := range seasons {
 			show.seasons = append(show.seasons, season{Season: s}) // Wow this is really weird obmitting the package name.
@@ -135,7 +135,7 @@ func (t Trakt) addSeasons(show *FullShow) {
 
 func (t Trakt) addEpisodes(show *FullShow) {
 	for k, season := range show.seasons {
-		episodes, response := t.Episodes().AllBySeason(show.show.IDs.Trakt, season.Number)
+		episodes, response := t.Episodes().AllBySeason(show.IDs.Trakt, season.Number)
 		if response.Err == nil {
 			for _, e := range episodes {
 				season.episodes = append(season.episodes, episode{Episode: e})
@@ -267,8 +267,8 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]FullShow) error {
 
 	var showIndex []FullShow
 	for dir, show := range shows {
-		location := path.Join(dir.Name(), "..", show.show.Title+".json")
-		err := writeObject(show.show, location)
+		location := path.Join(dir.Name(), "..", show.Title+".json")
+		err := writeObject(show, location)
 		if err != nil {
 			return err
 		}
