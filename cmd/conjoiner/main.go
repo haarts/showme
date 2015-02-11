@@ -88,10 +88,20 @@ func (t Trakt) turnDirsIntoShows(dirs []os.FileInfo) map[os.FileInfo]trakt.ShowR
 	shows := make(map[os.FileInfo]trakt.ShowResult)
 
 	for _, d := range dirs {
-		results, response := t.Shows().Search(path.Base(d.Name()))
-		if response.Err != nil {
-			continue
+		var results []trakt.ShowResult
+		var response *trakt.Result
+		operation := func() error {
+			results, response = t.Shows().Search(path.Base(d.Name()))
+			return response.Err
 		}
+		retry := func(f func() error) {
+			for i := 0; i < 3; i++ {
+				if err := f(); err == nil {
+					break
+				}
+			}
+		}
+		retry(operation)
 
 		if len(results) > 0 {
 			shows[d] = results[0]
