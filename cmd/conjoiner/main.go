@@ -276,13 +276,14 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]FullShow) error {
 	}
 
 	var showIndex []FullShow
-	for dir, show := range shows {
-		location := path.Join(c.root, dir.Name(), "..", show.Title+".json")
-		err := writeObject(show, location)
+	for _, show := range shows {
+		URL := show.Title + ".json"
+		show.URL = URL
+
+		err := writeObject(show, path.Join(c.root, URL))
 		if err != nil {
 			return err
 		}
-		show.URL = location
 		showIndex = append(showIndex, show)
 	}
 
