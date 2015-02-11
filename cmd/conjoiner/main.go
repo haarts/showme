@@ -287,5 +287,8 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]FullShow) error {
 func main() {
 	c := newConjoiner(os.Args[1])
 	shows := c.lookup()
-	c.createJSONs(shows)
+	err := c.createJSONs(shows)
+	if err != nil {
+		fmt.Printf("err %+v\n", err)
+	}
 }
