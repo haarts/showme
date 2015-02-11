@@ -269,7 +269,7 @@ func matchNameWithVideo(title string, dir string) string {
 
 func (c conjoiner) createJSONs(shows map[os.FileInfo]FullShow) error {
 	for dir, show := range shows {
-		err := filepath.Walk(dir.Name(), c.showFunc(show))
+		err := filepath.Walk(path.Join(c.root, dir.Name()), c.showFunc(show))
 		if err != nil {
 			return err
 		}
@@ -277,7 +277,7 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]FullShow) error {
 
 	var showIndex []FullShow
 	for dir, show := range shows {
-		location := path.Join(dir.Name(), "..", show.Title+".json")
+		location := path.Join(c.root, dir.Name(), "..", show.Title+".json")
 		err := writeObject(show, location)
 		if err != nil {
 			return err
