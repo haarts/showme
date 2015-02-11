@@ -93,7 +93,9 @@ func (t Trakt) turnDirsIntoShows(dirs []os.FileInfo) map[os.FileInfo]trakt.ShowR
 			continue
 		}
 
-		shows[d] = results[0]
+		if len(results) > 0 {
+			shows[d] = results[0]
+		}
 	}
 
 	return shows
