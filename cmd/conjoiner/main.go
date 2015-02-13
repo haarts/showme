@@ -84,6 +84,17 @@ type FullShow struct {
 	URL     string `json:"url"`
 }
 
+func retry(f func() error) error {
+	var err error
+	for i := 0; i < 3; i++ {
+		if err = f(); err == nil {
+			break
+		}
+	}
+
+	return err
+}
+
 func (t Trakt) turnDirsIntoShows(dirs []os.FileInfo) map[os.FileInfo]trakt.ShowResult {
 	shows := make(map[os.FileInfo]trakt.ShowResult)
 
@@ -93,13 +104,6 @@ func (t Trakt) turnDirsIntoShows(dirs []os.FileInfo) map[os.FileInfo]trakt.ShowR
 		operation := func() error {
 			results, response = t.Shows().Search(path.Base(d.Name()))
 			return response.Err
-		}
-		retry := func(f func() error) {
-			for i := 0; i < 3; i++ {
-				if err := f(); err == nil {
-					break
-				}
-			}
 		}
 		retry(operation)
 
