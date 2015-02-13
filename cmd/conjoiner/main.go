@@ -255,10 +255,12 @@ func (c conjoiner) showFunc(show FullShow) filepath.WalkFunc {
 		return nil
 	}
 }
-func matchNameWithVideo(title string, dir string) string {
-	asRunes := []rune(title)
+
+func matchNameWithVideo(episode episode, dir string) string {
+	asRunes := []rune(episode.Title)
 	var best string
 	var bestScore = 999
+	commonNotation := fmt.Sprintf("s%02de%02d", episode.Season, episode.Number)
 
 	fs, _ := ioutil.ReadDir(dir)
 	for _, f := range fs {
@@ -266,11 +268,21 @@ func matchNameWithVideo(title string, dir string) string {
 		if !b {
 			continue
 		}
+
+		// Bail out early
+		if ok, _ := regexp.Match(commonNotation, []byte(f.Name())); ok {
+			return f.Name()
+		}
+
 		score := levenshtein.DistanceForStrings(asRunes, []rune(f.Name()), levenshtein.DefaultOptions)
 		if score < bestScore {
 			bestScore = score
 			best = f.Name()
 		}
+	}
+
+	if bestScore > 15 { // too bad to consider
+		return ""
 	}
 
 	return path.Join(dir, best)
