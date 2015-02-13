@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 
 	trakt "github.com/42minutes/go-trakt"
 	"github.com/texttheater/golang-levenshtein/levenshtein"
@@ -200,6 +201,10 @@ func (s FullShow) findSeason(number int) (season, error) {
 	return season{}, fmt.Errorf("Could not find season %d", number)
 }
 
+func withoutRoot(root, path string) string {
+	return strings.Replace(path, root, "", 1)
+}
+
 func (c conjoiner) showFunc(show FullShow) filepath.WalkFunc {
 	return func(dir string, info os.FileInfo, err error) error {
 		if c.isShowRoot(dir) {
@@ -209,7 +214,7 @@ func (c conjoiner) showFunc(show FullShow) filepath.WalkFunc {
 				if err != nil {
 					return err
 				}
-				show.seasons[i].URL = location
+				show.seasons[i].URL = withoutRoot(c.root, location)
 			}
 
 			err = writeObject(show.seasons, path.Join(dir, "seasons.json"))
@@ -229,11 +234,11 @@ func (c conjoiner) showFunc(show FullShow) filepath.WalkFunc {
 			}
 
 			for i, episode := range season.episodes {
-				videoLocation := matchNameWithVideo(episode.Title, dir)
-				episode.VideoURL = videoLocation
+				videoLocation := path.Join(dir, matchNameWithVideo(episode, dir))
+				episode.VideoURL = withoutRoot(c.root, videoLocation)
 
 				location := path.Join(dir, fmt.Sprintf("s%02de%02d %s.json", episode.Season, episode.Number, episode.Title))
-				episode.URL = location
+				episode.URL = withoutRoot(c.root, location)
 
 				err = writeObject(episode, location)
 				if err != nil {
