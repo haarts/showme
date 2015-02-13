@@ -232,7 +232,7 @@ func (c conjoiner) showFunc(show FullShow) filepath.WalkFunc {
 				videoLocation := matchNameWithVideo(episode.Title, dir)
 				episode.VideoURL = videoLocation
 
-				location := path.Join(dir, episode.Title+".json")
+				location := path.Join(dir, fmt.Sprintf("s%02de%02d %s.json", episode.Season, episode.Number, episode.Title))
 				episode.URL = location
 
 				err = writeObject(episode, location)
