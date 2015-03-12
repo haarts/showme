@@ -2,88 +2,83 @@
 <head>
 <script src="vue.min.js"></script>
 <script src="reqwest.min.js"></script>
+
 </head>
 <body>
 
-<!-- component template -->
-<script type="text/x-template" id="grid-template">
-  <table>
-    <thead>
-      <tr>
-        <th v-repeat="key: columns"
-          v-on="click:sortBy(key)"
-          v-class="active: sortKey == title">
-          {{key | capitalize}}
-          <span class="arrow"
-            v-class="reversed[key] ? 'dsc' : 'asc'">
-          </span>
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-repeat="
-        entry: data
-        | filterBy filterKey
-        | orderBy sortKey reversed[sortKey]">
-        <td v-repeat="key: columns">
-          {{entry[key]}}
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</script>
-
-<!-- demo root element -->
 <div id="demo">
-  <demo-grid v-with="
-    data      : gridData,
-    columns   : gridColumns,
-    filterKey : searchQuery
-  "></demo-grid>
+    <div v-component="{{page}}"></div>
 </div>
 
 <script type="text/javascript">
-// register the grid component
-Vue.component('demo-grid', {
-  template: '#grid-template',
-  replace: true,
-  data: function () {
-    return {
-      columns: null,
-      sortKey: '',
-      filterKey: '',
-      reversed: {}
+
+
+Vue.component('detail-1', {
+    inherit: true,
+    replace: true,
+    template: '<div class="home"><h1>Detail</h1><p>{{mydata.test}}</p><img v-attr="src:mydata.img" /></div>',
+    data: function () {
+        return {
+            mydata: {}
+        }
+    },
+    compiled: function(){
+        this.loadData("single.json", function(data){
+            console.log(data)
+            this.mydata = data
+        }.bind(this))
+    },
+    methods: {
     }
-  },
-  compiled: function () {
-    // initialize reverse state
-    var self = this
-    this.columns.forEach(function (key) {
-      self.reversed.$add(key, false)
-    })
-  },
-  methods: {
-    sortBy: function (key) {
-      this.sortKey = key
-      this.reversed[key] = !this.reversed[key]
-    }
-  }
 })
 
-// bootstrap the demo
-var demo = new Vue({
+
+Vue.component('home-1', {
+    inherit: true,
+    replace: true,
+    template: '<div class="home"><p v-repeat="names" v-on="click:setPage(\'detail-1\',$index)">{{name}}</p></div>',
+     // v-if="page==\"home\""><h1>Home</h1><input type="text" v-model="mysearch" /><p v-repeat="names | filterBy mysearch" v-on="click:setPage(\"detail\",$index)">{{name}}</p></div>
+    data: function () {
+        return {
+            mysearch: "x"
+        }
+    },
+    compiled: function(){
+        this.loadData("test.json", function(data){
+            this.names = data
+        }.bind(this))
+    },
+    methods: {
+        back: function(){
+            this.page = "home"
+        }
+    }
+})
+
+
+
+var vm = new Vue({
   el: '#demo',
   data: {
-    search: '',
-    gridColumns: ['title', 'network'],
-    gridData: []
+    id: null,
+    page: "home-1",
+    names: []
+  },
+
+  methods: {
+    setPage: function (page, id) {
+      this.page = page
+      this.id = id
+    },
+    loadData: function(url,callback){
+        reqwest(url, function (data) {
+            callback(data)
+        })
+    }
   }
+
 })
 
-reqwest("shows.json", function(resp) {
-    demo.$data.gridData = resp
-  }
-)
 </script>
 </body>
 </html>
