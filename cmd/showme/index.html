@@ -15,7 +15,7 @@
 Vue.component('detail', {
     inherit: true,
     replace: true,
-    template: '<div class="home"><h1>Detail</h1><p>{{show.title}} - {{show.aired_episodes}}</p><img v-attr="src:mydata.img" /></div>',
+    template: '<div class="home"><h1>Detail</h1><p>{{show.title}} - {{show.aired_episodes}}</p><img v-attr="src:show.images.thumb.full" /></div>',
     data: function () {
         return {
             show: {}
