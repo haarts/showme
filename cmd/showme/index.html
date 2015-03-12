@@ -6,26 +6,24 @@
 </head>
 <body>
 
-<div id="demo">
+<div id="shows">
     <div v-component="{{page}}"></div>
 </div>
 
 <script type="text/javascript">
 
-
-Vue.component('detail-1', {
+Vue.component('detail', {
     inherit: true,
     replace: true,
-    template: '<div class="home"><h1>Detail</h1><p>{{mydata.test}}</p><img v-attr="src:mydata.img" /></div>',
+    template: '<div class="home"><h1>Detail</h1><p>{{show.title}} - {{show.aired_episodes}}</p><img v-attr="src:mydata.img" /></div>',
     data: function () {
         return {
-            mydata: {}
+            show: {}
         }
     },
     compiled: function(){
-        this.loadData("single.json", function(data){
-            console.log(data)
-            this.mydata = data
+        this.loadData(this.id, function(data){
+            this.show = data
         }.bind(this))
     },
     methods: {
@@ -33,19 +31,13 @@ Vue.component('detail-1', {
 })
 
 
-Vue.component('home-1', {
+Vue.component('home', {
     inherit: true,
     replace: true,
-    template: '<div class="home"><p v-repeat="names" v-on="click:setPage(\'detail-1\',$index)">{{name}}</p></div>',
-     // v-if="page==\"home\""><h1>Home</h1><input type="text" v-model="mysearch" /><p v-repeat="names | filterBy mysearch" v-on="click:setPage(\"detail\",$index)">{{name}}</p></div>
-    data: function () {
-        return {
-            mysearch: "x"
-        }
-    },
+    template: '<div class="home"><p v-repeat="shows" v-on="click:setPage(\'detail\', url)">{{title}}</p></div>',
     compiled: function(){
-        this.loadData("test.json", function(data){
-            this.names = data
+        this.loadData("shows.json", function(data){
+            this.shows = data
         }.bind(this))
     },
     methods: {
@@ -55,14 +47,12 @@ Vue.component('home-1', {
     }
 })
 
-
-
 var vm = new Vue({
-  el: '#demo',
+  el: '#shows',
   data: {
     id: null,
-    page: "home-1",
-    names: []
+    page: "home",
+    shows: []
   },
 
   methods: {
@@ -70,7 +60,7 @@ var vm = new Vue({
       this.page = page
       this.id = id
     },
-    loadData: function(url,callback){
+    loadData: function(url, callback){
         reqwest(url, function (data) {
             callback(data)
         })
