@@ -177,13 +177,13 @@ func (c conjoiner) lookup() map[os.FileInfo]FullShow {
 	return shows
 }
 
-func writeObject(v interface{}, dir string) error {
+func writeObject(v interface{}, file string) error {
 	data, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(dir, data, 0644)
+	err = ioutil.WriteFile(file, data, 0644)
 	if err != nil {
 		return err
 	}
