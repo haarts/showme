@@ -25,7 +25,7 @@ type conjoiner struct {
 func newConjoiner(root string) *conjoiner {
 	trailingName := string(filepath.Separator) + "[^" + string(filepath.Separator) + "]+"
 
-	showRoot := root + trailingName
+	showRoot := filepath.Base(root) + trailingName
 	seasonsRoot := showRoot + trailingName
 	episodesRoot := seasonsRoot + trailingName
 
