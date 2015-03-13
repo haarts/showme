@@ -79,7 +79,7 @@ type season struct {
 	URL      string `json:"url"`
 }
 
-type FullShow struct {
+type show struct {
 	trakt.Show
 	seasons []season
 	URL     string `json:"url"`
@@ -116,22 +116,22 @@ func (t Trakt) turnDirsIntoShows(dirs []os.FileInfo) map[os.FileInfo]trakt.ShowR
 	return shows
 }
 
-func (t Trakt) turnShowResultsIntoShows(showResults map[os.FileInfo]trakt.ShowResult) map[os.FileInfo]FullShow {
-	shows := make(map[os.FileInfo]FullShow)
+func (t Trakt) turnShowResultsIntoShows(showResults map[os.FileInfo]trakt.ShowResult) map[os.FileInfo]show {
+	shows := make(map[os.FileInfo]show)
 
-	for dir, show := range showResults {
-		result, response := t.Shows().One(show.Show.IDs.Trakt)
+	for dir, s := range showResults {
+		result, response := t.Shows().One(s.Show.IDs.Trakt)
 		if response.Err != nil {
 			continue
 		}
 
-		shows[dir] = FullShow{Show: *result}
+		shows[dir] = show{Show: *result}
 	}
 
 	return shows
 }
 
-func (t Trakt) addSeasonsAndEpisodesToShows(shows map[os.FileInfo]FullShow) {
+func (t Trakt) addSeasonsAndEpisodesToShows(shows map[os.FileInfo]show) {
 	for k, show := range shows {
 		t.addSeasons(&show)
 		t.addEpisodes(&show)
@@ -139,7 +139,7 @@ func (t Trakt) addSeasonsAndEpisodesToShows(shows map[os.FileInfo]FullShow) {
 	}
 }
 
-func (t Trakt) addSeasons(show *FullShow) {
+func (t Trakt) addSeasons(show *show) {
 	seasons, response := t.Seasons().All(show.IDs.Trakt)
 	if response.Err == nil {
 		for _, s := range seasons {
@@ -148,7 +148,7 @@ func (t Trakt) addSeasons(show *FullShow) {
 	}
 }
 
-func (t Trakt) addEpisodes(show *FullShow) {
+func (t Trakt) addEpisodes(show *show) {
 	for k, season := range show.seasons {
 		episodes, response := t.Episodes().AllBySeason(show.IDs.Trakt, season.Number)
 		if response.Err == nil {
@@ -160,7 +160,7 @@ func (t Trakt) addEpisodes(show *FullShow) {
 	}
 }
 
-func (c conjoiner) lookup() map[os.FileInfo]FullShow {
+func (c conjoiner) lookup() map[os.FileInfo]show {
 	t := Trakt{
 		trakt.NewClient(
 			"01045164ed603042b53acf841b590f0e7b728dbff319c8d128f8649e2427cbe9",
@@ -191,7 +191,7 @@ func writeObject(v interface{}, file string) error {
 	return nil
 }
 
-func (s FullShow) findSeason(number int) (season, error) {
+func (s show) findSeason(number int) (season, error) {
 	for _, season := range s.seasons {
 		if season.Number == number {
 			return season, nil
@@ -205,7 +205,7 @@ func withoutRoot(root, path string) string {
 	return strings.Replace(path, root, "", 1)
 }
 
-func (c conjoiner) showFunc(show FullShow) filepath.WalkFunc {
+func (c conjoiner) showFunc(show show) filepath.WalkFunc {
 	return func(dir string, info os.FileInfo, err error) error {
 		if c.isShowRoot(dir) {
 			for i, season := range show.seasons {
@@ -293,7 +293,7 @@ func matchNameWithVideo(episode episode, dir string) string {
 	return path.Join(dir, best)
 }
 
-func (c conjoiner) createJSONs(shows map[os.FileInfo]FullShow) error {
+func (c conjoiner) createJSONs(shows map[os.FileInfo]show) error {
 	for dir, show := range shows {
 		err := filepath.Walk(path.Join(c.root, dir.Name()), c.showFunc(show))
 		if err != nil {
@@ -301,7 +301,7 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]FullShow) error {
 		}
 	}
 
-	var showIndex []FullShow
+	var showIndex []show
 	for _, show := range shows {
 		URL := show.Title + ".json"
 		show.URL = URL

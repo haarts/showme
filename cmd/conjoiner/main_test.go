@@ -104,8 +104,8 @@ func TestAnnotateShows(t *testing.T) {
 
 	client := mockClient(ts.URL)
 
-	shows := map[os.FileInfo]FullShow{
-		mockFileInfo{}: FullShow{},
+	shows := map[os.FileInfo]show{
+		mockFileInfo{}: show{},
 	}
 	client.addSeasonsAndEpisodesToShows(shows)
 	show := shows[mockFileInfo{}]
@@ -147,7 +147,7 @@ func TestShowURLs(t *testing.T) {
 	data, err := ioutil.ReadFile("testdata/Videos/shows.json")
 	require.NoError(t, err)
 
-	var shows []FullShow
+	var shows []show
 	err = json.Unmarshal(data, &shows)
 	require.NoError(t, err)
 
@@ -197,8 +197,8 @@ func TestEpisodeURLs(t *testing.T) {
 }
 
 func createJSONs() error {
-	shows := map[os.FileInfo]FullShow{
-		mockFileInfo{name: "testdata/Videos/show1"}: FullShow{
+	shows := map[os.FileInfo]show{
+		mockFileInfo{name: "testdata/Videos/show1"}: show{
 			show: trakt.Show{Title: "Show One"},
 			seasons: []season{
 				{
@@ -221,7 +221,7 @@ func createJSONs() error {
 				},
 			},
 		},
-		mockFileInfo{name: "testdata/Videos/show2"}: FullShow{
+		mockFileInfo{name: "testdata/Videos/show2"}: show{
 			show: trakt.Show{Title: "Show Two"},
 		},
 	}
