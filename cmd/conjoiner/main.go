@@ -237,7 +237,7 @@ func (c conjoiner) showFunc(show FullShow) filepath.WalkFunc {
 				videoLocation := path.Join(dir, matchNameWithVideo(episode, dir))
 				episode.VideoURL = withoutRoot(c.root, videoLocation)
 
-				location := path.Join(dir, fmt.Sprintf("s%02de%02d %s.json", episode.Season, episode.Number, episode.Title))
+				location := path.Join(dir, fmt.Sprintf("s%02de%02d %s.json", episode.Season, episode.Number, replaceSeperators(episode.Title)))
 				episode.URL = withoutRoot(c.root, location)
 
 				err = writeObject(episode, location)
@@ -254,6 +254,11 @@ func (c conjoiner) showFunc(show FullShow) filepath.WalkFunc {
 		}
 		return nil
 	}
+}
+
+func replaceSeperators(name string) string {
+	re := regexp.MustCompile(string(filepath.Separator))
+	return string(re.ReplaceAll([]byte(name), []byte(" ")))
 }
 
 func matchNameWithVideo(episode episode, dir string) string {
