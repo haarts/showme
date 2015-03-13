@@ -210,11 +210,11 @@ func (c conjoiner) showFunc(show FullShow) filepath.WalkFunc {
 		if c.isShowRoot(dir) {
 			for i, season := range show.seasons {
 				location := path.Join(dir, strconv.Itoa(season.Number)+".json")
+				show.seasons[i].URL = withoutRoot(c.root, location)
 				err := writeObject(season, location)
 				if err != nil {
 					return err
 				}
-				show.seasons[i].URL = withoutRoot(c.root, location)
 			}
 
 			err = writeObject(show.seasons, path.Join(dir, "seasons.json"))
@@ -269,7 +269,7 @@ func matchNameWithVideo(episode episode, dir string) string {
 
 	fs, _ := ioutil.ReadDir(dir)
 	for _, f := range fs {
-		b, _ := regexp.MatchString(`\.mp4\z`, f.Name())
+		b, _ := regexp.MatchString(`\.(mp4|avi|mkv)\z`, f.Name())
 		if !b {
 			continue
 		}
