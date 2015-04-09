@@ -1,0 +1,108 @@
+<html>
+  <head>
+    <script src="jquery-2.1.3.min.js"></script>
+  </head>
+<body>
+  <a href="#" onclick="listShows(shows)">shows</a>
+  <div id='container'></div>
+
+  <script type="text/javascript">
+    var Show = function(data) {
+      this.show = data;
+      this.show.seasons = null;
+    };
+
+    Show.prototype.drawEpisode = function(episode) {
+      $("<div class='player'>" +
+          "<video controls>" +
+            "<source src="+episode.video_url+" type='video/mp4'>" +
+          "</video>" +
+        "</div>")
+    }
+
+    Show.prototype.drawEpisodes = function(season) {
+      list = $("<ul></ul>");
+      for (episode of season.episodes) {
+        item = $("<li>"+episode.title+"</li>");
+        item.click({show: show, episode: episode}, function(event) {
+          event.data.show.drawEpisode(event.data.episode);
+        });
+        list.append(item);
+      }
+      $("#container").html(list);
+    }
+
+    Show.prototype.episodesURL = function(season) { //hack, should be changed in generated JSON
+      url = season.url.replace(/Videos\//,'');
+      url = url.replace(/\.json/, '/episodes.json');
+      return url;
+    }
+
+    Show.prototype.showEpisodes = function(season) {
+      if (season.episodes == null) {
+        self = this;
+        $.get(this.episodesURL(season), function(data) {
+          season.episodes = data;
+          self.drawEpisodes(season);
+        });
+      } else {
+        //cached
+        this.drawEpisodes(season);
+      }
+    }
+
+    Show.prototype.drawSeasons = function() {
+      list = $("<ul></ul>");
+      for (season of this.show.seasons) {
+        item = $("<li>"+season.number+"</li>");
+        item.click({show: show, season: season}, function(event) {
+          event.data.show.showEpisodes(event.data.season);
+        });
+        list.append(item);
+      }
+      $("#container").html(list);
+    };
+
+    Show.prototype.seasonURL = function() { //hack, should be changed in generated JSON
+      return this.show.title+"/seasons.json";
+    }
+
+    Show.prototype.showSeasons = function() {
+      if (this.seasons == null) {
+        self = this;
+        $.get(this.seasonURL(), function(data) {
+          self.show.seasons = data;
+          self.drawSeasons();
+        });
+      } else {
+        //cached
+        this.drawSeasons();
+      }
+    };
+
+  </script>
+
+  <script type="text/javascript">
+    function listShows(shows) {
+      list = $("<ul></ul>");
+      for (show of shows) {
+        item = $("<li>"+show.show.title+"</li>");
+        item.click(show, function(event) {
+          event.data.showSeasons();
+        });
+        list.append(item);
+      }
+      $("#container").html(list);
+    }
+
+    shows = []
+
+    $.get('shows.json', function(data) {
+      for (show of data) {
+        shows.push(new Show(show))
+      }
+      listShows(shows);
+    });
+  </script>
+</body>
+</html>
