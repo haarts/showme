@@ -1,74 +1,108 @@
 <html>
 <head>
-<script src="vue.min.js"></script>
-<script src="reqwest.min.js"></script>
+<script src="jquery-2.1.3.min.js"></script>
 
 </head>
 <body>
 
-<div id="shows">
-    <div v-component="{{page}}"></div>
-</div>
+  <!--home template-->
+  <div id="show-grid">
+    <h2>Shows</h2>
 
-<script type="text/javascript">
+    <ul id="shows">
+    </ul>
+  </div>
 
-Vue.component('detail', {
-    inherit: true,
-    replace: true,
-    template: '<div class="home"><h1>Detail</h1><p>{{show.title}} - {{show.aired_episodes}}</p><img v-attr="src:show.images.thumb.full" /></div>',
-    data: function () {
-        return {
-            show: {}
-        }
-    },
-    compiled: function(){
-        this.loadData(this.id, function(data){
-            this.show = data
-        }.bind(this))
-    },
-    methods: {
+  <!--show detail template-->
+  <div id="show">
+    <a href="/">shows</a>
+    <a href="#" onclick="showSeasons()">seasons</a>
+    <h2 class="title"></h2>
+
+    <ul id="seasons">
+    </ul>
+    <ul id="episodes">
+    </ul>
+  </div>
+
+  <script type="text/javascript">
+    function showSeasons() {
+      $('#seasons').show();
+      $('#episodes').hide();
     }
-})
 
-
-Vue.component('home', {
-    inherit: true,
-    replace: true,
-    template: '<div class="home"><p v-repeat="shows" v-on="click:setPage(\'detail\', url)">{{title}}</p></div>',
-    compiled: function(){
-        this.loadData("shows.json", function(data){
-            this.shows = data
-        }.bind(this))
-    },
-    methods: {
-        back: function(){
-            this.page = "home"
-        }
+    function appendEpisodeToList(episode) {
+      elm = $("<li>"+episode.title+"</li>");
+      $("#episodes").append(elm);
     }
-})
 
-var vm = new Vue({
-  el: '#shows',
-  data: {
-    id: null,
-    page: "home",
-    shows: []
-  },
-
-  methods: {
-    setPage: function (page, id) {
-      this.page = page
-      this.id = id
-    },
-    loadData: function(url, callback){
-        reqwest(url, function (data) {
-            callback(data)
-        })
+    function listEpisodes(data) {
+      for (episode of data) {
+        appendEpisodeToList(episode)
+      }
     }
-  }
 
-})
+    function getEpisodes(season) {
+      url = season.url.replace(/Videos\//,''); //FIXME the generated JSON should obmit the 'Videos' prefix.
+      url = url.replace(/\.json/, '/episodes.json')
+      $.get(url, listEpisodes);
+    }
 
-</script>
+    function displaySeason(season) {
+      $("#seasons").hide();
+      $('#episodes').show();
+      $("#episodes").empty();
+      getEpisodes(season);
+    }
+
+    function appendSeasonToList(season) {
+      elm = $("<li>"+season.number+"</li>");
+      elm.click(function() {
+        displaySeason(season);
+      });
+      $("#seasons").append(elm);
+    }
+
+    function listSeasons(data) {
+      for (season of data) {
+        appendSeasonToList(season);
+      }
+    }
+
+    function getSeasons(show) {
+      url = show.title + "/seasons.json"; //FIXME the generated JSON should point to this file.
+      $.get(url, listSeasons);
+    }
+
+    function displayShow(show) {
+      $("#show-grid").hide();
+      $("#show .title").html(show.title);
+      $("#seasons").empty();
+      $("#episodes").empty();
+      getSeasons(show)
+    }
+
+    function appendShowToList(show) {
+      elm = $("<li>"+show.title+"</li>");
+      elm.click(function() {
+        displayShow(show);
+      });
+      $("#shows").append(elm);
+    }
+
+    function listShows(data) {
+      for (show of data) {
+        appendShowToList(show);
+      }
+    }
+
+    function getShows() {
+      $.get('shows.json', listShows);
+    }
+
+    getShows();
+
+  </script>
+
 </body>
 </html>
