@@ -12,24 +12,37 @@
       this.show.seasons = null;
     };
 
-    Show.prototype.drawEpisode = function(episode) {
-      $("<div class='player'>" +
+    Show.prototype.drawEpisode = function(season, episode) {
+      player = $("<div class='player'>" +
           "<video controls>" +
             "<source src="+episode.video_url+" type='video/mp4'>" +
           "</video>" +
         "</div>")
+
+      back = $("<a href='#'>back</a>");
+      back.click(this, function(event) {
+        event.data.drawEpisodes(season);
+      });
+      $("#container").html(back);
+      $("#container").append(player);
     }
 
     Show.prototype.drawEpisodes = function(season) {
       list = $("<ul></ul>");
       for (episode of season.episodes) {
         item = $("<li>"+episode.title+"</li>");
-        item.click({show: show, episode: episode}, function(event) {
-          event.data.show.drawEpisode(event.data.episode);
+        item.click({show: this, season: season, episode: episode}, function(event) {
+          event.data.show.drawEpisode(event.data.season, event.data.episode);
         });
         list.append(item);
       }
-      $("#container").html(list);
+
+      back = $("<a href='#'>back</a>");
+      back.click(this, function(event) {
+        event.data.drawSeasons();
+      });
+      $("#container").html(back);
+      $("#container").append(list);
     }
 
     Show.prototype.episodesURL = function(season) { //hack, should be changed in generated JSON
@@ -55,7 +68,7 @@
       list = $("<ul></ul>");
       for (season of this.show.seasons) {
         item = $("<li>"+season.number+"</li>");
-        item.click({show: show, season: season}, function(event) {
+        item.click({show: this, season: season}, function(event) {
           event.data.show.showEpisodes(event.data.season);
         });
         list.append(item);
@@ -68,6 +81,7 @@
     }
 
     Show.prototype.showSeasons = function() {
+      debugShow = this
       if (this.seasons == null) {
         self = this;
         $.get(this.seasonURL(), function(data) {
@@ -96,6 +110,7 @@
     }
 
     shows = []
+    debugShow = null
 
     $.get('shows.json', function(data) {
       for (show of data) {
