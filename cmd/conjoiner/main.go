@@ -234,10 +234,15 @@ func (c conjoiner) showFunc(show show) filepath.WalkFunc {
 			}
 
 			for i, episode := range season.episodes {
-				videoLocation := path.Join(dir, matchNameWithVideo(episode, dir))
-				episode.VideoURL = withoutRoot(c.root, videoLocation)
+				videoLocation, err := path.Join(dir, matchNameWithVideo(episode, dir))
+				if err == nil {
+					episode.VideoURL = withoutRoot(c.root, videoLocation)
+				}
 
-				location := path.Join(dir, fmt.Sprintf("s%02de%02d %s.json", episode.Season, episode.Number, replaceSeperators(episode.Title)))
+				location := path.Join(
+					dir,
+					fmt.Sprintf("s%02de%02d %s.json", episode.Season, episode.Number, replaceSeperators(episode.Title))
+				)
 				episode.URL = withoutRoot(c.root, location)
 
 				err = writeObject(episode, location)
@@ -261,7 +266,7 @@ func replaceSeperators(name string) string {
 	return string(re.ReplaceAll([]byte(name), []byte(" ")))
 }
 
-func matchNameWithVideo(episode episode, dir string) string {
+func matchNameWithVideo(episode episode, dir string) (string, error) {
 	asRunes := []rune(episode.Title)
 	var best string
 	var bestScore = 999
@@ -276,7 +281,7 @@ func matchNameWithVideo(episode episode, dir string) string {
 
 		// Bail out early
 		if ok, _ := regexp.Match(commonNotation, []byte(f.Name())); ok {
-			return f.Name()
+			return f.Name(), nil
 		}
 
 		score := levenshtein.DistanceForStrings(asRunes, []rune(f.Name()), levenshtein.DefaultOptions)
@@ -287,10 +292,10 @@ func matchNameWithVideo(episode episode, dir string) string {
 	}
 
 	if bestScore > 15 { // too bad to consider
-		return ""
+		return "", fmt.Errorf("no match found")
 	}
 
-	return path.Join(dir, best)
+	return path.Join(dir, best), nil
 }
 
 func (c conjoiner) createJSONs(shows map[os.FileInfo]show) error {
