@@ -69,20 +69,22 @@ type Trakt struct {
 
 type episode struct {
 	trakt.Episode
+	URL      string `json:"url"` // This is useful when having a list of episodes and you want the single episode.
 	VideoURL string `json:"video_url"`
-	URL      string `json:"url"`
 }
 
 type season struct {
 	trakt.Season
-	episodes []episode
-	URL      string `json:"url"`
+	episodes    []episode
+	URL         string `json:"url"` // Useful when season is presented in a list.
+	EpisodesURL string `json:"episodes_url"`
 }
 
 type show struct {
 	trakt.Show
-	seasons []season
-	URL     string `json:"url"`
+	seasons    []season
+	URL        string `json:"url"` // Useful when show is presented in a list.
+	SeasonsURL string `json:"seasons_url"`
 }
 
 func retry(f func() error) error {
@@ -103,7 +105,8 @@ func (t Trakt) turnDirsIntoShows(dirs []os.FileInfo) map[os.FileInfo]trakt.ShowR
 		var results []trakt.ShowResult
 		var response *trakt.Result
 		operation := func() error {
-			results, response = t.Shows().Search(path.Base(d.Name()))
+			showName := strings.Replace(path.Base(d.Name()), " (US)", "", 1) //RLY? Trakt is very broken.
+			results, response = t.Shows().Search(showName)
 			return response.Err
 		}
 		retry(operation)
@@ -198,7 +201,7 @@ func (s show) findSeason(number int) (season, error) {
 		}
 	}
 
-	return season{}, fmt.Errorf("Could not find season %d", number)
+	return season{}, fmt.Errorf("Could not find season %d of %s", number, s.Title)
 }
 
 func withoutRoot(root, path string) string {
@@ -211,13 +214,14 @@ func (c conjoiner) showFunc(show show) filepath.WalkFunc {
 			for i, season := range show.seasons {
 				location := path.Join(dir, strconv.Itoa(season.Number)+".json")
 				show.seasons[i].URL = withoutRoot(c.root, location)
-				err := writeObject(season, location)
+				show.seasons[i].EpisodesURL = withoutRoot(c.root, path.Join(dir, strconv.Itoa(season.Number), "episodes.json"))
+				err := writeObject(show.seasons[i], location) // write single season JSON
 				if err != nil {
 					return err
 				}
 			}
 
-			err = writeObject(show.seasons, path.Join(dir, "seasons.json"))
+			err = writeObject(show.seasons, path.Join(dir, "seasons.json")) // write seasons as a list
 			if err != nil {
 				return err
 			}
@@ -245,14 +249,14 @@ func (c conjoiner) showFunc(show show) filepath.WalkFunc {
 				)
 				episode.URL = withoutRoot(c.root, location)
 
-				err = writeObject(episode, location)
+				err = writeObject(episode, location) // write single episode JSON
 				if err != nil {
 					return err
 				}
 				season.episodes[i] = episode
 			}
 
-			err = writeObject(season.episodes, path.Join(dir, "episodes.json"))
+			err = writeObject(season.episodes, path.Join(dir, "episodes.json")) // write episodes as a list
 			if err != nil {
 				return err
 			}
@@ -270,7 +274,7 @@ func matchNameWithVideo(episode episode, dir string) (string, error) {
 	asRunes := []rune(episode.Title)
 	var best string
 	var bestScore = 999
-	commonNotation := fmt.Sprintf("s%02de%02d", episode.Season, episode.Number)
+	commonNotation := fmt.Sprintf("S%02dE%02d", episode.Season, episode.Number)
 
 	fs, _ := ioutil.ReadDir(dir)
 	for _, f := range fs {
@@ -310,15 +314,16 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]show) error {
 	for _, show := range shows {
 		URL := show.Title + ".json"
 		show.URL = URL
+		show.SeasonsURL = path.Join(show.Title, "seasons.json")
 
-		err := writeObject(show, path.Join(c.root, URL))
+		err := writeObject(show, path.Join(c.root, URL)) // write single show JSON
 		if err != nil {
 			return err
 		}
 		showIndex = append(showIndex, show)
 	}
 
-	err := writeObject(showIndex, path.Join(c.root, "shows.json"))
+	err := writeObject(showIndex, path.Join(c.root, "shows.json")) // write shows as a list
 	if err != nil {
 		return err
 	}
