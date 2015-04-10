@@ -234,14 +234,14 @@ func (c conjoiner) showFunc(show show) filepath.WalkFunc {
 			}
 
 			for i, episode := range season.episodes {
-				videoLocation, err := path.Join(dir, matchNameWithVideo(episode, dir))
+				videoLocation, err := matchNameWithVideo(episode, dir)
 				if err == nil {
-					episode.VideoURL = withoutRoot(c.root, videoLocation)
+					episode.VideoURL = withoutRoot(c.root, path.Join(dir, videoLocation))
 				}
 
 				location := path.Join(
 					dir,
-					fmt.Sprintf("s%02de%02d %s.json", episode.Season, episode.Number, replaceSeperators(episode.Title))
+					fmt.Sprintf("s%02de%02d %s.json", episode.Season, episode.Number, replaceSeperators(episode.Title)),
 				)
 				episode.URL = withoutRoot(c.root, location)
 
@@ -308,7 +308,7 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]show) error {
 
 	var showIndex []show
 	for _, show := range shows {
-		URL := path.Join(show.Title,  "seasons.json")
+		URL := path.Join(show.Title, "seasons.json")
 		show.URL = URL
 
 		err := writeObject(show, path.Join(c.root, URL))
