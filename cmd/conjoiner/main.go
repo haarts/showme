@@ -278,7 +278,7 @@ func matchNameWithVideo(episode episode, dir string) (string, error) {
 
 	fs, _ := ioutil.ReadDir(dir)
 	for _, f := range fs {
-		b, _ := regexp.MatchString(`\.(mp4|avi|mkv)\z`, f.Name())
+		b, _ := regexp.MatchString(`\.(mp4)\z`, f.Name())
 		if !b {
 			continue
 		}
