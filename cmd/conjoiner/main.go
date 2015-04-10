@@ -209,7 +209,7 @@ func (c conjoiner) showFunc(show show) filepath.WalkFunc {
 	return func(dir string, info os.FileInfo, err error) error {
 		if c.isShowRoot(dir) {
 			for i, season := range show.seasons {
-				location := path.Join(dir, strconv.Itoa(season.Number), "episodes.json")
+				location := path.Join(dir, strconv.Itoa(season.Number)+".json")
 				show.seasons[i].URL = withoutRoot(c.root, location)
 				err := writeObject(season, location)
 				if err != nil {
@@ -308,7 +308,7 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]show) error {
 
 	var showIndex []show
 	for _, show := range shows {
-		URL := path.Join(show.Title, "seasons.json")
+		URL := show.Title + ".json"
 		show.URL = URL
 
 		err := writeObject(show, path.Join(c.root, URL))
