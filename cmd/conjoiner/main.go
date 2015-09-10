@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	trakt "github.com/42minutes/go-trakt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/texttheater/golang-levenshtein/levenshtein"
 )
 
@@ -352,10 +353,18 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]show) error {
 }
 
 func main() {
+	log.Info("Started conjoiner")
 	c := newConjoiner(os.Args[1])
+
 	shows := c.lookup()
+	log.WithFields(log.Fields{
+		"#shows": len(shows),
+	}).Info("Found shows")
+
 	err := c.createJSONs(shows)
 	if err != nil {
-		fmt.Printf("err %+v\n", err)
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Error("An error occurred while writing JSON files")
 	}
 }
