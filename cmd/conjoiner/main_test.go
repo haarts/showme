@@ -127,8 +127,8 @@ func TestShowFiles(t *testing.T) {
 		"testdata/Videos/show1/2.json",
 		"testdata/Videos/show1/3.json",
 		"testdata/Videos/show1/1/episodes.json",
-		"testdata/Videos/show1/1/Episode 1.json",
-		"testdata/Videos/show1/1/Episode 2.json",
+		"testdata/Videos/show1/1/s01e01 Episode 1.json",
+		"testdata/Videos/show1/1/s01e02 Episode 2.json",
 		"testdata/Videos/Show Two.json",
 	}
 
@@ -152,8 +152,8 @@ func TestShowURLs(t *testing.T) {
 	require.NoError(t, err)
 
 	URLs := []string{shows[0].URL, shows[1].URL}
-	assert.Contains(t, URLs, "testdata/Videos/Show One.json")
-	assert.Contains(t, URLs, "testdata/Videos/Show Two.json")
+	assert.Contains(t, URLs, "Show One.json")
+	assert.Contains(t, URLs, "Show Two.json")
 }
 
 func TestSeasonURLs(t *testing.T) {
@@ -170,8 +170,8 @@ func TestSeasonURLs(t *testing.T) {
 	require.NoError(t, err)
 
 	URLs := []string{seasons[0].URL, seasons[1].URL}
-	assert.Contains(t, URLs, "testdata/Videos/show1/1.json")
-	assert.Contains(t, URLs, "testdata/Videos/show1/2.json")
+	assert.Contains(t, URLs, "show1/1.json")
+	assert.Contains(t, URLs, "show1/2.json")
 }
 
 func TestEpisodeURLs(t *testing.T) {
@@ -188,17 +188,17 @@ func TestEpisodeURLs(t *testing.T) {
 	require.NoError(t, err)
 
 	URLs := []string{episodes[0].URL, episodes[1].URL}
-	assert.Contains(t, URLs, "testdata/Videos/show1/1/Episode 1.json")
-	assert.Contains(t, URLs, "testdata/Videos/show1/1/Episode 2.json")
+	assert.Contains(t, URLs, "show1/1/s01e01 Episode 1.json")
+	assert.Contains(t, URLs, "show1/1/s01e02 Episode 2.json")
 
 	videoURLs := []string{episodes[0].VideoURL, episodes[1].VideoURL}
-	assert.Contains(t, videoURLs, "testdata/Videos/show1/1/s01e01_bar.mp4")
-	assert.Contains(t, videoURLs, "testdata/Videos/show1/1/s01e02_foo.mp4")
+	assert.Contains(t, videoURLs, "show1/1/s01e01_bar.mp4")
+	assert.Contains(t, videoURLs, "show1/1/s01e02_foo.mp4")
 }
 
 func createJSONs() error {
 	shows := map[os.FileInfo]show{
-		mockFileInfo{name: "testdata/Videos/show1"}: show{
+		mockFileInfo{name: "show1"}: show{
 			Show: trakt.Show{Title: "Show One"},
 			seasons: []season{
 				{
@@ -206,10 +206,10 @@ func createJSONs() error {
 					Season: trakt.Season{Number: 1},
 					episodes: []episode{
 						{
-							Episode: trakt.Episode{Title: "Episode 1"},
+							Episode: trakt.Episode{Title: "Episode 1", Season: 1, Number: 1},
 						},
 						{
-							Episode: trakt.Episode{Title: "Episode 2"},
+							Episode: trakt.Episode{Title: "Episode 2", Season: 1, Number: 2},
 						},
 					},
 				},
@@ -221,7 +221,7 @@ func createJSONs() error {
 				},
 			},
 		},
-		mockFileInfo{name: "testdata/Videos/show2"}: show{
+		mockFileInfo{name: "show2"}: show{
 			Show: trakt.Show{Title: "Show Two"},
 		},
 	}

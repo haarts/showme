@@ -77,7 +77,7 @@ type Trakt struct {
 
 type episode struct {
 	trakt.Episode
-	URL      string `json:"url"` // This is useful when having a list of episodes and you want the single episode.
+	URL      string `json:"url"` // Useful when having a list of episodes and you want the single episode.
 	VideoURL string `json:"video_url"`
 }
 
@@ -213,7 +213,7 @@ func (s show) findSeason(number int) (season, error) {
 }
 
 func withoutRoot(root, path string) string {
-	return strings.Replace(path, root, "", 1)
+	return strings.Replace(path, root+string(filepath.Separator), "", 1)
 }
 
 func (c conjoiner) showFunc(show show) filepath.WalkFunc {
@@ -227,7 +227,8 @@ func (c conjoiner) showFunc(show show) filepath.WalkFunc {
 			for i, season := range show.seasons {
 				location := path.Join(dir, strconv.Itoa(season.Number)+".json")
 				show.seasons[i].URL = withoutRoot(c.root, location)
-				show.seasons[i].EpisodesURL = withoutRoot(c.root, path.Join(dir, strconv.Itoa(season.Number), "episodes.json"))
+				show.seasons[i].EpisodesURL =
+					withoutRoot(c.root, path.Join(dir, strconv.Itoa(season.Number), "episodes.json"))
 				err := writeObject(show.seasons[i], location) // write single season JSON
 				if err != nil {
 					return err
@@ -293,7 +294,7 @@ func matchNameWithVideo(episode episode, dir string) (string, error) {
 	asRunes := []rune(episode.Title)
 	var best string
 	var bestScore = 999
-	commonNotation := fmt.Sprintf("S%02dE%02d", episode.Season, episode.Number)
+	commonNotation := fmt.Sprintf("s%02de%02d", episode.Season, episode.Number)
 
 	fs, _ := ioutil.ReadDir(dir)
 	for _, f := range fs {
