@@ -1,19 +1,17 @@
 # ShowMe
 A media server with no options what so ever.
 
-I don't want all these options, it will just confuse my spouse. Convention over
-configuration!
+I don't want all these options, it will just confuse my spouse.
 
 This project has two executables:
 - Conjoiner, this walks a directory structure containing shows and creates JSON
   files (containing pointers to images etc etc). The resulting files are be be
   used by ShowMe.
-- ShowMe, a trivial file server which serves up these JSONs _and_ a Javascript
-  (Vue) application.
+- ShowMe, a trivial file server which serves up these JSONs _and_ a bunch of
+  Javascript.
 
 
 # Required directory structure.
-
 ```
 shows
 |-- Name
