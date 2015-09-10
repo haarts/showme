@@ -37,14 +37,22 @@ func newConjoiner(root string) *conjoiner {
 	}
 }
 
-func (c conjoiner) isShowRoot(dir string) bool {
-	f, _ := os.Stat(dir)
-	return c.isShowRootRegexp.MatchString(dir) && f.IsDir()
+func (c conjoiner) isShowRoot(dir string) (bool, error) {
+	f, err := os.Stat(dir)
+	if err != nil {
+		return false, err
+	}
+
+	return c.isShowRootRegexp.MatchString(dir) && f.IsDir(), nil
 }
 
-func (c conjoiner) isSeasonsRoot(dir string) bool {
-	f, _ := os.Stat(dir)
-	return c.isSeasonsRootRegexp.MatchString(dir) && f.IsDir()
+func (c conjoiner) isSeasonsRoot(dir string) (bool, error) {
+	f, err := os.Stat(dir)
+	if err != nil {
+		return false, err
+	}
+
+	return c.isSeasonsRootRegexp.MatchString(dir) && f.IsDir(), nil
 }
 
 func (c conjoiner) listShows() []os.FileInfo {
@@ -210,7 +218,12 @@ func withoutRoot(root, path string) string {
 
 func (c conjoiner) showFunc(show show) filepath.WalkFunc {
 	return func(dir string, info os.FileInfo, err error) error {
-		if c.isShowRoot(dir) {
+		isShowRoot, err := c.isShowRoot(dir)
+		if err != nil {
+			return err
+		}
+
+		if isShowRoot {
 			for i, season := range show.seasons {
 				location := path.Join(dir, strconv.Itoa(season.Number)+".json")
 				show.seasons[i].URL = withoutRoot(c.root, location)
@@ -226,7 +239,13 @@ func (c conjoiner) showFunc(show show) filepath.WalkFunc {
 				return err
 			}
 		}
-		if c.isSeasonsRoot(dir) {
+
+		isSeasonsRoot, err := c.isSeasonsRoot(dir)
+		if err != nil {
+			return err
+		}
+
+		if isSeasonsRoot {
 			_, seasonNumber := filepath.Split(dir)
 			i, err := strconv.Atoi(seasonNumber)
 			if err != nil {
