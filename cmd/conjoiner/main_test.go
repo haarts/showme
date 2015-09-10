@@ -199,7 +199,7 @@ func TestEpisodeURLs(t *testing.T) {
 func createJSONs() error {
 	shows := map[os.FileInfo]show{
 		mockFileInfo{name: "testdata/Videos/show1"}: show{
-			show: trakt.Show{Title: "Show One"},
+			Show: trakt.Show{Title: "Show One"},
 			seasons: []season{
 				{
 					// You need to drop the package name to address the embedded field.
@@ -222,7 +222,7 @@ func createJSONs() error {
 			},
 		},
 		mockFileInfo{name: "testdata/Videos/show2"}: show{
-			show: trakt.Show{Title: "Show Two"},
+			Show: trakt.Show{Title: "Show Two"},
 		},
 	}
 
