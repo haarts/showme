@@ -18,7 +18,7 @@ import (
 
 type conjoiner struct {
 	root                 string
-	isShowRootRegexp     *regexp.Regexp
+	isShowsRootRegexp    *regexp.Regexp
 	isSeasonsRootRegexp  *regexp.Regexp
 	isEpisodesRootRegexp *regexp.Regexp
 }
@@ -26,13 +26,13 @@ type conjoiner struct {
 func newConjoiner(root string) *conjoiner {
 	trailingName := string(filepath.Separator) + "[^" + string(filepath.Separator) + "]+"
 
-	showRoot := filepath.Base(root) + trailingName
-	seasonsRoot := showRoot + trailingName
+	showsRoot := filepath.Base(root) + trailingName
+	seasonsRoot := showsRoot + trailingName
 	episodesRoot := seasonsRoot + trailingName
 
 	return &conjoiner{
 		root:                 root,
-		isShowRootRegexp:     regexp.MustCompile(showRoot + "\\z"),
+		isShowsRootRegexp:    regexp.MustCompile(showsRoot + "\\z"),
 		isSeasonsRootRegexp:  regexp.MustCompile(seasonsRoot + "\\z"),
 		isEpisodesRootRegexp: regexp.MustCompile(episodesRoot + "\\z"),
 	}
@@ -44,7 +44,7 @@ func (c conjoiner) isShowRoot(dir string) (bool, error) {
 		return false, err
 	}
 
-	return c.isShowRootRegexp.MatchString(dir) && f.IsDir(), nil
+	return c.isShowsRootRegexp.MatchString(dir) && f.IsDir(), nil
 }
 
 func (c conjoiner) isSeasonsRoot(dir string) (bool, error) {
