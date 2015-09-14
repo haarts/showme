@@ -178,7 +178,7 @@ func (c conjoiner) showFunc(show show) filepath.WalkFunc {
 			for i, episode := range season.episodes {
 				videoLocation, err := matchNameWithVideo(episode, dir)
 				if err == nil {
-					episode.VideoURL = withoutRoot(c.root, path.Join(dir, videoLocation))
+					episode.VideoURL = withoutRoot(c.root, videoLocation)
 				}
 
 				location := path.Join(
