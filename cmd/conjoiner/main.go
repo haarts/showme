@@ -324,10 +324,6 @@ func matchNameWithVideo(episode episode, dir string) (string, error) {
 		}
 	}
 
-	if bestScore > 15 { // too bad to consider
-		return "", fmt.Errorf("no match found")
-	}
-
 	return path.Join(dir, best), nil
 }
 
