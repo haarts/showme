@@ -25,10 +25,15 @@ type conjoiner struct {
 	isEpisodesRootRegexp *regexp.Regexp
 }
 
-func newConjoiner(root string) *conjoiner {
+func newConjoiner(root string) (*conjoiner, error) {
+	root, err := filepath.Abs(root)
+	if err != nil {
+		return nil, err
+	}
+
 	trailingName := string(filepath.Separator) + "[^" + string(filepath.Separator) + "]+"
 
-	showsRoot := filepath.Base(root) + trailingName
+	showsRoot := root + trailingName
 	seasonsRoot := showsRoot + trailingName
 	episodesRoot := seasonsRoot + trailingName
 
@@ -37,7 +42,7 @@ func newConjoiner(root string) *conjoiner {
 		isShowsRootRegexp:    regexp.MustCompile(showsRoot + "\\z"),
 		isSeasonsRootRegexp:  regexp.MustCompile(seasonsRoot + "\\z"),
 		isEpisodesRootRegexp: regexp.MustCompile(episodesRoot + "\\z"),
-	}
+	}, nil
 }
 
 func (c conjoiner) isShowRoot(dir string) (bool, error) {
@@ -358,17 +363,22 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]show) error {
 
 func main() {
 	log.Info("Started conjoiner")
-	c := newConjoiner(os.Args[1])
+	c, err := newConjoiner(os.Args[1])
+	if err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Fatal("Error initializing Conjoiner")
+	}
 
 	shows := c.lookup()
 	log.WithFields(log.Fields{
 		"#shows": len(shows),
 	}).Info("Found shows")
 
-	err := c.createJSONs(shows)
+	err = c.createJSONs(shows)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
-		}).Error("An error occurred while writing JSON files")
+		}).Fatal("An error occurred while writing JSON files")
 	}
 }
