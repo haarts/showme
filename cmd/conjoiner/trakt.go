@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/42minutes/go-trakt"
+	log "github.com/Sirupsen/logrus"
 )
 
 type Trakt struct {
@@ -47,6 +48,9 @@ func (t Trakt) turnDirsIntoShows(dirs []os.FileInfo) map[os.FileInfo]trakt.ShowR
 	shows := make(map[os.FileInfo]trakt.ShowResult)
 
 	for _, d := range dirs {
+		log.WithFields(log.Fields{
+			"dir": d,
+		}).Debug("Searching for show.")
 		var results []trakt.ShowResult
 		var response *trakt.Result
 		operation := func() error {
@@ -57,6 +61,10 @@ func (t Trakt) turnDirsIntoShows(dirs []os.FileInfo) map[os.FileInfo]trakt.ShowR
 		retry(operation)
 
 		if len(results) > 0 {
+			log.WithFields(log.Fields{
+				"dir":        d,
+				"show_title": results[0].Show.Title,
+			}).Debug("Matched directory with show")
 			shows[d] = results[0]
 		}
 	}
