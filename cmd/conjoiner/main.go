@@ -267,7 +267,7 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]show) error {
 
 func init() {
 	const (
-		logLevelUsage = "Set log level (0,1,2,3,4, higher is more logging)."
+		logLevelUsage = "Set log level (0,1,2,3,4,5, higher is more logging)."
 	)
 
 	flag.IntVar(&logLevel, "log-level", int(log.ErrorLevel), logLevelUsage)
