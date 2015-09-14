@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -17,6 +18,8 @@ import (
 )
 
 // TODO deal with broken symlinks
+
+var logLevel int
 
 type conjoiner struct {
 	root                 string
@@ -262,9 +265,20 @@ func (c conjoiner) createJSONs(shows map[os.FileInfo]show) error {
 	return nil
 }
 
+func init() {
+	const (
+		logLevelUsage = "Set log level (0,1,2,3,4, higher is more logging)."
+	)
+
+	flag.IntVar(&logLevel, "log-level", int(log.ErrorLevel), logLevelUsage)
+}
+
 func main() {
+	flag.Parse()
+	log.SetLevel(log.Level(logLevel))
+
 	log.Info("Started conjoiner")
-	c, err := newConjoiner(os.Args[1])
+	c, err := newConjoiner(flag.Args()[0])
 	if err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
