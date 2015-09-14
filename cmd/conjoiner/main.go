@@ -16,6 +16,8 @@ import (
 	"github.com/texttheater/golang-levenshtein/levenshtein"
 )
 
+// TODO deal with broken symlinks
+
 type conjoiner struct {
 	root                 string
 	isShowsRootRegexp    *regexp.Regexp
