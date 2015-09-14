@@ -59,7 +59,10 @@ func (c conjoiner) isSeasonsRoot(dir string) (bool, error) {
 func (c conjoiner) listShows() []os.FileInfo {
 	fs, err := ioutil.ReadDir(c.root)
 	if err != nil {
-		fmt.Printf("err %+v\n", err)
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Error("Error occured when listing shows")
+		return []os.FileInfo{}
 	}
 
 	var shows []os.FileInfo
