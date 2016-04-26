@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	trakt "github.com/42minutes/go-trakt"
+	"github.com/42minutes/go-trakt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/texttheater/golang-levenshtein/levenshtein"
 )
@@ -97,6 +97,8 @@ func retry(f func() error) error {
 }
 
 func (c conjoiner) lookup() map[os.FileInfo]show {
+	dirs := c.listShows()
+
 	t := Trakt{
 		trakt.NewClientWith(
 			"https://api-v2launch.trakt.tv",
@@ -106,7 +108,6 @@ func (c conjoiner) lookup() map[os.FileInfo]show {
 			nil,
 		),
 	}
-	dirs := c.listShows()
 	searchResults := t.turnDirsIntoShows(dirs)
 
 	shows := t.turnShowResultsIntoShows(searchResults)
@@ -276,8 +277,8 @@ func init() {
 func main() {
 	flag.Parse()
 	log.SetLevel(log.Level(logLevel))
-
 	log.Info("Started conjoiner")
+
 	c, err := newConjoiner(flag.Args()[0])
 	if err != nil {
 		log.WithFields(log.Fields{

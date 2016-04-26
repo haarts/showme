@@ -48,9 +48,9 @@ func (t Trakt) turnDirsIntoShows(dirs []os.FileInfo) map[os.FileInfo]trakt.ShowR
 	shows := make(map[os.FileInfo]trakt.ShowResult)
 
 	for _, d := range dirs {
-		log.WithFields(log.Fields{
-			"dir": d,
-		}).Debug("Searching for show.")
+		contextLogger := log.WithFields(log.Fields{
+			"dir": d.Name(),
+		})
 		var results []trakt.ShowResult
 		var response *trakt.Result
 		operation := func() error {
@@ -61,11 +61,11 @@ func (t Trakt) turnDirsIntoShows(dirs []os.FileInfo) map[os.FileInfo]trakt.ShowR
 		retry(operation)
 
 		if len(results) > 0 {
-			log.WithFields(log.Fields{
-				"dir":        d,
-				"show_title": results[0].Show.Title,
-			}).Debug("Matched directory with show")
+			contextLogger.WithField("show_title", results[0].Show.Title).
+				Debug("Matched directory with show")
 			shows[d] = results[0]
+		} else {
+			contextLogger.Warn("Unable to find a match")
 		}
 	}
 
@@ -76,10 +76,18 @@ func (t Trakt) turnShowResultsIntoShows(showResults map[os.FileInfo]trakt.ShowRe
 	shows := make(map[os.FileInfo]show)
 
 	for dir, s := range showResults {
+		contextLogger := log.WithFields(log.Fields{
+			"dir":  dir.Name(),
+			"show": s.Show.Title(),
+		})
 		result, response := t.Shows().One(s.Show.IDs.Trakt)
 		if response.Err != nil {
+			contextLogger.WithField("err", response.Err).
+				Warn("Failed to fetch detailed show information")
 			continue
 		}
+
+		contextLogger.Debug("Fetched detailed show information")
 
 		shows[dir] = show{Show: *result}
 	}
@@ -96,21 +104,35 @@ func (t Trakt) addSeasonsAndEpisodesToShows(shows map[os.FileInfo]show) {
 }
 
 func (t Trakt) addSeasons(show *show) {
+	contextLogger := log.WithFields(log.Fields{
+		"show": show.Title(),
+	})
+
 	seasons, response := t.Seasons().All(show.IDs.Trakt)
-	if response.Err == nil {
+	if response.Err != nil {
+		contextLogger.WithField("err", response.Err).
+			Warn("Failed to add season information")
+	} else {
 		for _, s := range seasons {
 			show.seasons = append(show.seasons, season{Season: s}) // Wow this is really weird obmitting the package name.
 		}
+		contextLogger.Debug("Added season information")
 	}
 }
 
 func (t Trakt) addEpisodes(show *show) {
+	contextLogger := log.WithField("show", show.Title())
+
 	for k, season := range show.seasons {
 		episodes, response := t.Episodes().AllBySeason(show.IDs.Trakt, season.Number)
 		if response.Err == nil {
 			for _, e := range episodes {
 				season.episodes = append(season.episodes, episode{Episode: e})
 			}
+			contextLogger.Debug("Added episode information")
+		} else {
+			contextLogger.WithField("err", err).
+				Warn("Failed to add episode information")
 		}
 		show.seasons[k] = season
 	}
