@@ -5,6 +5,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -45,7 +46,7 @@ func (s *Seasons) Add(season Season) {
 	*s = append(*s, season)
 }
 
-func findMatchingShow(file os.FileInfo) *Show {
+func findMatchingShow(file os.FileInfo) *TvMazeShow {
 	contextLogger := log.WithField("file", file.Name())
 	tvMaze := TvMazeClient{
 		URLTemplate: tvMazeURLTemplate,
@@ -57,15 +58,12 @@ func findMatchingShow(file os.FileInfo) *Show {
 		contextLogger.Debug("No match")
 		return nil
 	}
-	spew.Dump(tvMazeShow)
+	contextLogger.WithField("show", tvMazeShow.Name).Debug("Found match")
 
-	show := mapFoundShowToDiskContent(file, tvMazeShow)
-
-	contextLogger.WithField("show", show.Name).Debug("Found match")
-	return &show
+	return tvMazeShow
 }
 
-func mapFoundShowToDiskContent(file os.FileInfo, tvMazeShow *TvMazeShow) Show {
+func mapFoundShowToDiskContent(file os.FileInfo, tvMazeShow *TvMazeShow) (Show, error) {
 	contextLogger := log.WithField("file", file.Name())
 	seasons := Seasons{}
 
@@ -80,11 +78,11 @@ func mapFoundShowToDiskContent(file os.FileInfo, tvMazeShow *TvMazeShow) Show {
 			contextLogger.WithField("season", season).Info("Season not found on disk")
 		} else {
 			contextLogger.WithField("err", err).Error("Failed to stat season dir")
+			return Show{}, err
 		}
 	}
 
-	//spew.Dump(seasons)
-	return Show{TvMazeShow: *tvMazeShow, Seasons: seasons}
+	return Show{TvMazeShow: *tvMazeShow, Seasons: seasons}, nil
 }
 
 func main() {
@@ -103,7 +101,12 @@ func main() {
 
 	for _, file := range files {
 		if file.IsDir() { // TODO make parralel
-			findMatchingShow(file)
+			tvMazeShow := findMatchingShow(file)
+			if tvMazeShow != nil {
+				show, err := mapFoundShowToDiskContent(file, tvMazeShow)
+				fmt.Printf("err = %+v\n", err)
+				spew.Dump(show)
+			}
 		} else {
 			contextLogger := log.WithField("file", file.Name())
 			contextLogger.Debug("skipping")
