@@ -10,6 +10,19 @@ import (
 
 var tvMazeURLTemplate = "http://api.tvmaze.com/singlesearch/shows?q=%s&embed=episodes"
 
+type Episode struct {
+	ID      int64  `json:"id"`
+	Name    string `json:"name"`
+	Season  int64  `json:"season"`
+	Episode int64  `json:"episode"`
+	Summary string `json:"summary"`
+	//AirDate time.Time `json:"airdate"`
+	Image struct {
+		Medium   string `json:"medium"`
+		Original string `json:"original"`
+	} `json:"image"`
+}
+
 type TvMazeShow struct {
 	Name  string `json:"name"`
 	Image struct {
@@ -18,18 +31,7 @@ type TvMazeShow struct {
 	} `json:"image"`
 	Summary  string `json:"summary"`
 	Embedded struct {
-		Episodes []struct {
-			ID      int64  `json:"id"`
-			Name    string `json:"name"`
-			Season  int64  `json:"season"`
-			Episode int64  `json:"episode"`
-			Summary string `json:"summary"`
-			//AirDate time.Time `json:"airdate"`
-			Image struct {
-				Medium   string `json:"medium"`
-				Original string `json:"original"`
-			} `json:"image"`
-		} `json:"episodes"`
+		Episodes []Episode `json:"episodes"`
 	} `json:"_embedded"`
 }
 
