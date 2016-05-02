@@ -1,18 +1,12 @@
-// fetcher takes a directory with series and checks which episodes are already
-// downloaded. For this it first tries to match the directory name to a search
-// result from tvmaze.
 package main
 
 import (
+	"encoding/json"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
-	"strconv"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/davecgh/go-spew/spew"
 )
 
 var logLevel int
@@ -26,24 +20,62 @@ func init() {
 	flag.IntVar(&logLevel, "log-level", int(log.ErrorLevel), logLevelUsage)
 }
 
-type Show struct {
-	TvMazeShow
-	Seasons Seasons
+type ShowInList struct {
+	Name    string `json:"name"`
+	Summary string `json:"summary"`
+	Image   struct {
+		Medium   string `json:"medium"`
+		Original string `json:"original"`
+	} `json:"image"`
+
+	URL string `json:"url"`
+}
+
+type SingleShow struct {
+	Name    string `json:"name"`
+	Summary string `json:"summary"`
+	Image   struct {
+		Medium   string `json:"medium"`
+		Original string `json:"original"`
+	} `json:"image"`
+
+	SeasonURLs []string `json:"season_urls"`
 }
 
 type Season struct {
-	Number int64 `json:"number"`
+	Name    string `json:"name"`
+	Summary string `json:"summary"`
+	Image   struct {
+		Medium   string `json:"medium"`
+		Original string `json:"original"`
+	} `json:"image"`
+
+	Number   int `json:"number"`
+	Episodes []struct {
+		Number  int    `json:"number"`
+		Name    string `json:"name"`
+		Summary string `json:"summary"`
+		Image   struct {
+			Medium   string `json:"medium"`
+			Original string `json:"original"`
+		} `json:"image"`
+
+		URL string `json:"url"`
+	} `json:"episodes"`
 }
 
-type Seasons []Season
+type SingleEpisode struct {
+	Number  int    `json:"number"`
+	Name    string `json:"name"`
+	Summary string `json:"summary"`
+	Image   struct {
+		Medium   string `json:"medium"`
+		Original string `json:"original"`
+	} `json:"image"`
 
-func (s *Seasons) Add(season Season) {
-	for _, existing := range *s {
-		if existing.Number == season.Number {
-			return
-		}
-	}
-	*s = append(*s, season)
+	VideoURL     string `json:"video_url"`
+	ShowName     string `json:"show_name"`
+	SeasonNumber int    `json:"season_number"`
 }
 
 func findMatchingShow(file os.FileInfo) *TvMazeShow {
@@ -63,26 +95,36 @@ func findMatchingShow(file os.FileInfo) *TvMazeShow {
 	return tvMazeShow
 }
 
-func mapFoundShowToDiskContent(file os.FileInfo, tvMazeShow *TvMazeShow) (Show, error) {
-	contextLogger := log.WithField("file", file.Name())
-	seasons := Seasons{}
+func writeEpisodeJSON(show *TvMazeShow) {
 
-	for _, episode := range tvMazeShow.Embedded.Episodes {
-		//seasonDir, err := os.Stat(path.Join(root, file.Name(), strconv.Itoa(int(episode.Season))))
-		season := strconv.Itoa(int(episode.Season))
-		_, err := os.Stat(path.Join(root, file.Name(), season))
-		//fmt.Printf("seasonDir = %+v\n", seasonDir)
-		if err == nil {
-			seasons.Add(Season{Number: episode.Season})
-		} else if os.IsNotExist(err) {
-			contextLogger.WithField("season", season).Info("Season not found on disk")
-		} else {
-			contextLogger.WithField("err", err).Error("Failed to stat season dir")
-			return Show{}, err
-		}
+}
+func writeSeasonJSON(show *TvMazeShow) {
+
+}
+func writeShowJSON(show *TvMazeShow) {
+
+}
+
+func convertToShowInList(show *TvMazeShow) ShowInList {
+	return ShowInList{
+		Name:    show.Name,
+		Summary: show.Summary,
+		Image:   show.Image,
+		URL:     "/" + show.Name,
+	}
+}
+
+func writeShowsJSON(shows []ShowInList) {
+	file, err := os.Create("shows.json")
+	if err != nil {
+		log.WithField("err", err).Error("Error opening shows.json")
+		return
 	}
 
-	return Show{TvMazeShow: *tvMazeShow, Seasons: seasons}, nil
+	if err = json.NewEncoder(file).Encode(shows); err != nil {
+		log.WithField("err", err).Error("Error writing shows.json")
+		return
+	}
 }
 
 func main() {
@@ -92,24 +134,38 @@ func main() {
 
 	root = flag.Args()[0]
 
-	files, err := ioutil.ReadDir(root)
+	err := os.Chdir(root)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"err":  err,
+			"root": root,
+		}).Fatal("Error changing working dir")
+	}
+
+	files, err := ioutil.ReadDir(".")
 	if err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
 		}).Fatal("Error initializing Fetcher")
 	}
 
+	shows := []ShowInList{}
 	for _, file := range files {
-		if file.IsDir() { // TODO make parralel
-			tvMazeShow := findMatchingShow(file)
-			if tvMazeShow != nil {
-				show, err := mapFoundShowToDiskContent(file, tvMazeShow)
-				fmt.Printf("err = %+v\n", err)
-				spew.Dump(show)
-			}
-		} else {
-			contextLogger := log.WithField("file", file.Name())
-			contextLogger.Debug("skipping")
+		if !file.IsDir() {
+			log.WithField("file", file.Name()).Debug("skipping")
+			continue
+		}
+
+		tvMazeShow := findMatchingShow(file)
+		if tvMazeShow != nil {
+			show := convertToShowInList(tvMazeShow)
+			shows = append(shows, show)
+
+			writeShowJSON(tvMazeShow)    // 1x show.json
+			writeSeasonJSON(tvMazeShow)  // Nx season.json
+			writeEpisodeJSON(tvMazeShow) // Mx episode.json
 		}
 	}
+
+	writeShowsJSON(shows)
 }
