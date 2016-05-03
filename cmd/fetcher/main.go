@@ -97,12 +97,12 @@ func findMatchingShow(file os.FileInfo) *TvMazeShow {
 	return tvMazeShow
 }
 
-func writeEpisodeJSON(show *TvMazeShow) {
-
+func writeEpisodeJSONs(show *TvMazeShow) error {
+	return nil
 }
 
-func writeSeasonJSON(show *TvMazeShow) {
-
+func writeSeasonJSONs(show *TvMazeShow) error {
+	return nil
 }
 
 func unique(list []int) []int {
@@ -211,9 +211,9 @@ func main() {
 			show := convertToShowInList(tvMazeShow)
 			shows = append(shows, show)
 
-			writeShowJSON(tvMazeShow)    // 1x show.json
-			writeSeasonJSON(tvMazeShow)  // Nx season.json
-			writeEpisodeJSON(tvMazeShow) // Mx episode.json
+			writeShowJSON(tvMazeShow)     // 1x show.json
+			writeSeasonJSONs(tvMazeShow)  // Nx season.json
+			writeEpisodeJSONs(tvMazeShow) // Mx episode.json
 		}
 	}
 

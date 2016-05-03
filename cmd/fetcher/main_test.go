@@ -12,6 +12,41 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var tvMazeShow = &TvMazeShow{
+	Name: "show1",
+	Embedded: struct {
+		Episodes []Episode `json:"episodes"`
+	}{
+		Episodes: []Episode{
+			Episode{
+				Name:    "first",
+				Episode: int64(1),
+				Season:  int64(1), // fine, exists on disk
+			},
+			Episode{
+				Name:    "second",
+				Episode: int64(2),
+				Season:  int64(1), // fine, exists on disk
+			},
+			Episode{
+				Name:    "third",
+				Episode: int64(3),
+				Season:  int64(1), // not fine, absent on disk
+			},
+			Episode{
+				Name:    "first in second",
+				Episode: int64(1),
+				Season:  int64(2), // not fine, absent on disk
+			},
+			Episode{
+				Name:    "first in second",
+				Episode: int64(1),
+				Season:  int64(3), // not fine, absent on disk
+			},
+		},
+	},
+}
+
 func TestConvertToShowInList(t *testing.T) {
 	tvMazeShow := &TvMazeShow{
 		Name:    "foo",
@@ -85,41 +120,6 @@ func TestCreateShowJSON(t *testing.T) {
 	copyR("testdata/Videos_template", "testdata/Videos")
 	defer os.RemoveAll("testdata/Videos")
 
-	tvMazeShow := &TvMazeShow{
-		Name: "show1",
-		Embedded: struct {
-			Episodes []Episode `json:"episodes"`
-		}{
-			Episodes: []Episode{
-				Episode{
-					Name:    "first",
-					Episode: int64(1),
-					Season:  int64(1), // fine, exists on disk
-				},
-				Episode{
-					Name:    "second",
-					Episode: int64(2),
-					Season:  int64(1), // fine, exists on disk
-				},
-				Episode{
-					Name:    "third",
-					Episode: int64(3),
-					Season:  int64(1), // not fine, absent on disk
-				},
-				Episode{
-					Name:    "first in second",
-					Episode: int64(1),
-					Season:  int64(2), // not fine, absent on disk
-				},
-				Episode{
-					Name:    "first in second",
-					Episode: int64(1),
-					Season:  int64(3), // not fine, absent on disk
-				},
-			},
-		},
-	}
-
 	require.NoError(t, os.Chdir("testdata/Videos"))
 	defer os.Chdir("../..")
 
@@ -140,9 +140,6 @@ func TestCreateSeasonJSON(t *testing.T) {
 	// step 3; having click on A season
 	// name;  season.json
 	// url; https://foo.bar/foo/1
-	copyR("testdata/Videos_template", "testdata/Videos")
-	defer os.RemoveAll("testdata/Videos")
-
 	expected := `{
 		name: "foo",
 		summary: "lorum ipsum",
@@ -174,8 +171,30 @@ func TestCreateSeasonJSON(t *testing.T) {
 			}
 		]
 	}`
-
 	assert.NotNil(t, expected)
+
+	copyR("testdata/Videos_template", "testdata/Videos")
+	defer os.RemoveAll("testdata/Videos")
+
+	require.NoError(t, os.Chdir("testdata/Videos"))
+	defer os.Chdir("../..")
+
+	require.NoError(t, writeSeasonJSONs(tvMazeShow))
+
+	file, err := os.Open("show1/1/season.json")
+	require.NoError(t, err)
+
+	season := &Season{}
+	require.NoError(t, json.NewDecoder(file).Decode(season))
+
+	assert.Equal(t, tvMazeShow.Name, season.Name)
+	assert.Equal(t, tvMazeShow.Summary, season.Summary)
+	assert.Equal(t, tvMazeShow.Image, season.Image)
+	assert.Equal(t, tvMazeShow.Embedded.Episodes[0].Season, season.Number)
+	assert.Len(t, season.Episodes, 2)
+	assert.Equal(t, "/show1/1/first", season.Episodes[0].URL)
+	assert.Equal(t, "/show1/1/second", season.Episodes[1].URL)
+
 }
 
 func TestCreateEpisodeJSON(t *testing.T) {
