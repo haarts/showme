@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestConvertToShowInList(t *testing.T) {
@@ -65,9 +67,6 @@ func TestCreateShowJSON(t *testing.T) {
 	// step 2; having clicked on A show
 	// name; show.json
 	// url; https://foo.bar/foo
-	copyR("testdata/Videos_template", "testdata/Videos")
-	defer os.RemoveAll("testdata/Videos")
-
 	expected := `{
 		name: "foo",
 		summary: "lorum ipsum",
@@ -81,8 +80,10 @@ func TestCreateShowJSON(t *testing.T) {
 			"/foo/3",
 		]
 	}`
-
 	assert.NotNil(t, expected)
+
+	copyR("testdata/Videos_template", "testdata/Videos")
+	defer os.RemoveAll("testdata/Videos")
 
 	tvMazeShow := &TvMazeShow{
 		Name: "show1",
@@ -91,26 +92,48 @@ func TestCreateShowJSON(t *testing.T) {
 		}{
 			Episodes: []Episode{
 				Episode{
-					Name:   "first",
-					Season: int64(1), // fine, exists on disk
+					Name:    "first",
+					Episode: int64(1),
+					Season:  int64(1), // fine, exists on disk
 				},
 				Episode{
-					Name:   "second",
-					Season: int64(1), // fine, exists on disk
+					Name:    "second",
+					Episode: int64(2),
+					Season:  int64(1), // fine, exists on disk
 				},
 				Episode{
-					Name:   "third",
-					Season: int64(1), // not fine, absent on disk
+					Name:    "third",
+					Episode: int64(3),
+					Season:  int64(1), // not fine, absent on disk
 				},
 				Episode{
-					Name:   "first in second",
-					Season: int64(2), // not fine, absent on disk
+					Name:    "first in second",
+					Episode: int64(1),
+					Season:  int64(2), // not fine, absent on disk
+				},
+				Episode{
+					Name:    "first in second",
+					Episode: int64(1),
+					Season:  int64(3), // not fine, absent on disk
 				},
 			},
 		},
 	}
 
-	writeShowJSON(TvMazeShow)
+	require.NoError(t, os.Chdir("testdata/Videos"))
+	defer os.Chdir("../..")
+
+	require.NoError(t, writeShowJSON(tvMazeShow))
+
+	file, err := os.Open("show1/show.json")
+	require.NoError(t, err)
+
+	show := &SingleShow{}
+	require.NoError(t, json.NewDecoder(file).Decode(show))
+
+	assert.Len(t, show.SeasonURLs, 2)
+	assert.Equal(t, "/show1/1", show.SeasonURLs[0])
+	assert.Equal(t, "/show1/2", show.SeasonURLs[1])
 }
 
 func TestCreateSeasonJSON(t *testing.T) {

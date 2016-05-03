@@ -5,6 +5,8 @@ import (
 	"flag"
 	"io/ioutil"
 	"os"
+	"path"
+	"strconv"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -98,11 +100,60 @@ func findMatchingShow(file os.FileInfo) *TvMazeShow {
 func writeEpisodeJSON(show *TvMazeShow) {
 
 }
+
 func writeSeasonJSON(show *TvMazeShow) {
 
 }
-func writeShowJSON(show *TvMazeShow) {
 
+func unique(list []int) []int {
+	unique := []int{}
+	for _, item := range list {
+		found := false
+		for _, uniqueItem := range unique {
+			if item == uniqueItem {
+				found = true
+			}
+		}
+		if !found {
+			unique = append(unique, item)
+		}
+	}
+
+	return unique
+}
+
+func writeShowJSON(show *TvMazeShow) error {
+	singleShow := SingleShow{
+		Name:       show.Name,
+		Summary:    show.Summary,
+		Image:      show.Image,
+		SeasonURLs: []string{},
+	}
+
+	seasons := []int{}
+	for _, episode := range show.Embedded.Episodes {
+		seasons = append(seasons, int(episode.Season))
+	}
+
+	uniqueSeasons := unique(seasons)
+
+	for _, season := range uniqueSeasons {
+		if _, err := os.Stat(path.Join(show.Name, strconv.Itoa(season))); err == nil {
+			singleShow.SeasonURLs = append(singleShow.SeasonURLs, "/"+show.Name+"/"+strconv.Itoa(season))
+		}
+	}
+
+	file, err := os.Create(path.Join(show.Name, "show.json"))
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if err := json.NewEncoder(file).Encode(singleShow); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func convertToShowInList(show *TvMazeShow) ShowInList {
