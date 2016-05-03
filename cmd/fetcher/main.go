@@ -134,8 +134,7 @@ func main() {
 
 	root = flag.Args()[0]
 
-	err := os.Chdir(root)
-	if err != nil {
+	if err := os.Chdir(root); err != nil {
 		log.WithFields(log.Fields{
 			"err":  err,
 			"root": root,
