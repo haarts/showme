@@ -15,30 +15,30 @@ import (
 var tvMazeShow = &TvMazeShow{
 	Name: "show1",
 	Embedded: struct {
-		Episodes []Episode `json:"episodes"`
+		Episodes []TvMazeEpisode `json:"episodes"`
 	}{
-		Episodes: []Episode{
-			Episode{
+		Episodes: []TvMazeEpisode{
+			TvMazeEpisode{
 				Name:    "first",
 				Episode: int64(1),
 				Season:  int64(1), // fine, exists on disk
 			},
-			Episode{
+			TvMazeEpisode{
 				Name:    "second",
 				Episode: int64(2),
 				Season:  int64(1), // fine, exists on disk
 			},
-			Episode{
+			TvMazeEpisode{
 				Name:    "third",
 				Episode: int64(3),
 				Season:  int64(1), // not fine, absent on disk
 			},
-			Episode{
+			TvMazeEpisode{
 				Name:    "first in second",
 				Episode: int64(1),
 				Season:  int64(2), // not fine, absent on disk
 			},
-			Episode{
+			TvMazeEpisode{
 				Name:    "first in second",
 				Episode: int64(1),
 				Season:  int64(3), // not fine, absent on disk
@@ -179,7 +179,7 @@ func TestCreateSeasonJSON(t *testing.T) {
 	require.NoError(t, os.Chdir("testdata/Videos"))
 	defer os.Chdir("../..")
 
-	require.NoError(t, writeSeasonJSONs(tvMazeShow))
+	writeSeasonJSONs(tvMazeShow)
 
 	file, err := os.Open("show1/1/season.json")
 	require.NoError(t, err)
@@ -194,7 +194,6 @@ func TestCreateSeasonJSON(t *testing.T) {
 	assert.Len(t, season.Episodes, 2)
 	assert.Equal(t, "/show1/1/first", season.Episodes[0].URL)
 	assert.Equal(t, "/show1/1/second", season.Episodes[1].URL)
-
 }
 
 func TestCreateEpisodeJSON(t *testing.T) {

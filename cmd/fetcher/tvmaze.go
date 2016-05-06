@@ -10,7 +10,7 @@ import (
 
 var tvMazeURLTemplate = "http://api.tvmaze.com/singlesearch/shows?q=%s&embed=episodes"
 
-type Episode struct {
+type TvMazeEpisode struct {
 	ID      int64  `json:"id"`
 	Name    string `json:"name"`
 	Season  int64  `json:"season"`
@@ -31,7 +31,7 @@ type TvMazeShow struct {
 	} `json:"image"`
 	Summary  string `json:"summary"`
 	Embedded struct {
-		Episodes []Episode `json:"episodes"`
+		Episodes []TvMazeEpisode `json:"episodes"`
 	} `json:"_embedded"`
 }
 
