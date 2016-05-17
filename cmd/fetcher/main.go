@@ -106,9 +106,12 @@ func writeEpisodeJSON(episode SingleEpisode) error {
 		strconv.Itoa(episode.SeasonNumber),
 		urlify(episode.Name),
 	)
-	err := os.Mkdir(episodeDir, 0744)
-	if err != nil {
-		return err
+
+	if _, err := os.Stat(episodeDir); err != nil {
+		err := os.Mkdir(episodeDir, 0744)
+		if err != nil {
+			return err
+		}
 	}
 
 	file, err := os.Create(path.Join(
