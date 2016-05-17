@@ -119,13 +119,19 @@ func writeEpisodeJSON(episode SingleEpisode) error {
 		"episode.json"),
 	)
 	if err != nil {
+		log.WithField("err", err).Warn("failed to create episode.json")
 		return err
 	}
 	defer file.Close()
 
 	if err := json.NewEncoder(file).Encode(episode); err != nil {
+		log.WithField("err", err).Warn("failed to encode to episode.json")
 		return err
 	}
+
+	log.WithFields(log.Fields{
+		"file": file.Name(),
+	}).Debug("episode written to disk")
 
 	return nil
 }
@@ -135,11 +141,20 @@ func episodes(seasonNumber int, show *TvMazeShow) []SingleEpisode {
 
 	for _, episode := range show.Embedded.Episodes {
 		if int(episode.Season) != seasonNumber {
+			log.WithFields(log.Fields{
+				"actual_season":   episode.Season,
+				"required_season": seasonNumber,
+			}).Debug("wrong season, skipping")
 			continue
 		}
 
 		// Check if episode exists on disk
 		if !episodeExists(path.Join(show.Name, strconv.Itoa(seasonNumber)), episode) {
+			log.WithFields(log.Fields{
+				"episode": episode.Episode,
+				"name":    episode.Name,
+				"path":    path.Join(show.Name, strconv.Itoa(seasonNumber)),
+			}).Warn("episode doesn't exists on disk, skipping")
 			continue
 		}
 
@@ -164,6 +179,11 @@ func episodes(seasonNumber int, show *TvMazeShow) []SingleEpisode {
 func writeEpisodeJSONs(show *TvMazeShow) {
 	for _, seasonNumber := range seasons(show) {
 		if _, err := os.Stat(path.Join(show.Name, strconv.Itoa(seasonNumber))); err != nil {
+			log.WithFields(log.Fields{
+				"err":    err,
+				"season": seasonNumber,
+				"show":   show.Name,
+			}).Warn("season not found on disk, skipping")
 			continue
 		}
 
@@ -190,11 +210,12 @@ func episodeVideoFile(seasonDir string, episode TvMazeEpisode) string {
 
 	for _, file := range files {
 		if file.IsDir() {
-			log.WithField("file", file.Name()).Debug("skipping")
+			log.WithField("file", file.Name()).Debug("is dir, skipping")
 			continue
 		}
 
 		if strings.Contains(file.Name(), fmt.Sprintf("S%02dE%02d", episode.Season, episode.Episode)) {
+			log.WithField("file", file.Name()).Debug("match")
 			return file.Name()
 		}
 	}
@@ -248,13 +269,19 @@ func season(number int, show *TvMazeShow) Season {
 func writeSeasonJSON(seasonNumber int, show *TvMazeShow) error {
 	file, err := os.Create(path.Join(show.Name, strconv.Itoa(seasonNumber), "season.json"))
 	if err != nil {
+		log.WithField("err", err).Warn("failed to create show.json")
 		return err
 	}
 	defer file.Close()
 
 	if err := json.NewEncoder(file).Encode(season(seasonNumber, show)); err != nil {
+		log.WithField("err", err).Warn("failed to encode")
 		return err
 	}
+
+	log.WithFields(log.Fields{
+		"file": file.Name(),
+	}).Info("season written to disk")
 
 	return nil
 }
@@ -265,6 +292,7 @@ func writeSeasonJSONs(show *TvMazeShow) {
 			continue
 		}
 
+		// TODO perhaps I can drop it on the floor here? Eg not return anything in writeSeasonJSON
 		if err := writeSeasonJSON(seasonNumber, show); err != nil {
 			log.WithFields(log.Fields{
 				"err":    err,
@@ -272,6 +300,7 @@ func writeSeasonJSONs(show *TvMazeShow) {
 			}).Error("Error writing season")
 		}
 	}
+
 }
 
 func urlify(name string) string {
@@ -321,13 +350,19 @@ func writeShowJSON(show *TvMazeShow) error {
 
 	file, err := os.Create(path.Join(show.Name, "show.json"))
 	if err != nil {
+		log.WithField("err", err).Warn("failed to create show.json")
 		return err
 	}
 	defer file.Close()
 
 	if err := json.NewEncoder(file).Encode(singleShow); err != nil {
+		log.WithField("err", err).Warn("failed to encode")
 		return err
 	}
+
+	log.WithFields(log.Fields{
+		"file": file.Name(),
+	}).Info("show written to disk")
 
 	return nil
 }
@@ -378,7 +413,7 @@ func main() {
 	shows := []ShowInList{}
 	for _, file := range files {
 		if !file.IsDir() {
-			log.WithField("file", file.Name()).Debug("skipping")
+			log.WithField("file", file.Name()).Warn("skipping")
 			continue
 		}
 
