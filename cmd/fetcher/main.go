@@ -59,7 +59,7 @@ type Season struct {
 	Episodes []internalEpisode `json:"episodes"`
 }
 
-type internalEpisode struct {
+type commonEpisode struct {
 	Number  int    `json:"number"`
 	Name    string `json:"name"`
 	Summary string `json:"summary"`
@@ -67,18 +67,16 @@ type internalEpisode struct {
 		Medium   string `json:"medium"`
 		Original string `json:"original"`
 	} `json:"image"`
+}
+
+type internalEpisode struct {
+	commonEpisode
 
 	URL string `json:"url"`
 }
 
 type SingleEpisode struct {
-	Number  int    `json:"number"`
-	Name    string `json:"name"`
-	Summary string `json:"summary"`
-	Image   struct {
-		Medium   string `json:"medium"`
-		Original string `json:"original"`
-	} `json:"image"`
+	commonEpisode
 
 	VideoURL     string `json:"video_url"`
 	ShowName     string `json:"show_name"`
@@ -102,11 +100,83 @@ func findMatchingShow(file os.FileInfo) *TvMazeShow {
 	return tvMazeShow
 }
 
-func writeEpisodeJSONs(show *TvMazeShow) error {
+func writeEpisodeJSON(episode SingleEpisode) error {
+	episodeDir := path.Join(
+		episode.ShowName,
+		strconv.Itoa(episode.SeasonNumber),
+		urlify(episode.Name),
+	)
+	err := os.Mkdir(episodeDir, 0744)
+	if err != nil {
+		return err
+	}
+
+	file, err := os.Create(path.Join(
+		episodeDir,
+		"episode.json"),
+	)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if err := json.NewEncoder(file).Encode(episode); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func episodeExists(seasonDir string, episode TvMazeEpisode) bool {
+func episodes(seasonNumber int, show *TvMazeShow) []SingleEpisode {
+	episodes := []SingleEpisode{}
+
+	for _, episode := range show.Embedded.Episodes {
+		if int(episode.Season) != seasonNumber {
+			continue
+		}
+
+		// Check if episode exists on disk
+		if !episodeExists(path.Join(show.Name, strconv.Itoa(seasonNumber)), episode) {
+			continue
+		}
+
+		episodes = append(episodes, SingleEpisode{
+			commonEpisode: commonEpisode{
+				Number:  int(episode.Episode),
+				Name:    episode.Name,
+				Summary: episode.Summary,
+				Image:   episode.Image,
+			},
+
+			VideoURL: path.Join(show.Name, strconv.Itoa(seasonNumber), episodeVideoFile(
+				path.Join(show.Name, strconv.Itoa(seasonNumber)), episode)),
+			ShowName:     show.Name,
+			SeasonNumber: seasonNumber,
+		})
+	}
+
+	return episodes
+}
+
+func writeEpisodeJSONs(show *TvMazeShow) {
+	for _, seasonNumber := range seasons(show) {
+		if _, err := os.Stat(path.Join(show.Name, strconv.Itoa(seasonNumber))); err != nil {
+			continue
+		}
+
+		for _, episode := range episodes(seasonNumber, show) {
+			if err := writeEpisodeJSON(episode); err != nil {
+				log.WithFields(log.Fields{
+					"err":     err,
+					"season":  seasonNumber,
+					"episode": episode.Number,
+				}).Error("Error writing episode")
+			}
+		}
+	}
+}
+
+func episodeVideoFile(seasonDir string, episode TvMazeEpisode) string {
 	files, err := ioutil.ReadDir(seasonDir)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -122,52 +192,64 @@ func episodeExists(seasonDir string, episode TvMazeEpisode) bool {
 		}
 
 		if strings.Contains(file.Name(), fmt.Sprintf("S%02dE%02d", episode.Season, episode.Episode)) {
-			return true
+			return file.Name()
 		}
-
 	}
 
-	return false
+	return ""
 }
 
-func writeSeasonJSON(seasonNumber int, show *TvMazeShow) error {
+func episodeExists(seasonDir string, episode TvMazeEpisode) bool {
+	if episodeVideoFile(seasonDir, episode) == "" {
+		return false
+	}
+	return true
+}
+
+func season(number int, show *TvMazeShow) Season {
 	season := Season{
 		Name:    show.Name,
 		Summary: show.Summary,
 		Image:   show.Image,
-		Number:  seasonNumber,
+		Number:  number,
 	}
 
 	episodes := []internalEpisode{}
 
 	for _, episode := range show.Embedded.Episodes {
-		if int(episode.Season) != seasonNumber {
+		if int(episode.Season) != number {
 			continue
 		}
 
 		// Check if episode exists on disk
-		if !episodeExists(path.Join(show.Name, strconv.Itoa(seasonNumber)), episode) {
+		if !episodeExists(path.Join(show.Name, strconv.Itoa(number)), episode) {
 			continue
 		}
 
 		episodes = append(episodes, internalEpisode{
-			Number:  int(episode.Episode),
-			Name:    episode.Name,
-			Summary: episode.Summary,
-			Image:   episode.Image,
-			URL:     "/" + path.Join(show.Name, strconv.Itoa(seasonNumber), urlify(episode.Name)),
+			commonEpisode: commonEpisode{
+				Number:  int(episode.Episode),
+				Name:    episode.Name,
+				Summary: episode.Summary,
+				Image:   episode.Image,
+			},
+			URL: "/" + path.Join(show.Name, strconv.Itoa(number), urlify(episode.Name)),
 		})
 	}
 
 	season.Episodes = episodes
 
+	return season
+}
+
+func writeSeasonJSON(seasonNumber int, show *TvMazeShow) error {
 	file, err := os.Create(path.Join(show.Name, strconv.Itoa(seasonNumber), "season.json"))
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	if err := json.NewEncoder(file).Encode(season); err != nil {
+	if err := json.NewEncoder(file).Encode(season(seasonNumber, show)); err != nil {
 		return err
 	}
 
@@ -187,7 +269,6 @@ func writeSeasonJSONs(show *TvMazeShow) {
 			}).Error("Error writing season")
 		}
 	}
-
 }
 
 func urlify(name string) string {

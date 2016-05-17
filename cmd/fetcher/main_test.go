@@ -200,8 +200,6 @@ func TestCreateEpisodeJSON(t *testing.T) {
 	// step 4; having click on A episode
 	// name; episode.json
 	// url; https://foo.bar/foo/1/pilot
-	copyR("testdata/Videos_template", "testdata/Videos")
-	defer os.RemoveAll("testdata/Videos")
 
 	expected := `{
 		show_name: "foo",
@@ -217,17 +215,26 @@ func TestCreateEpisodeJSON(t *testing.T) {
 	}`
 
 	assert.NotNil(t, expected)
+
+	copyR("testdata/Videos_template", "testdata/Videos")
+	defer os.RemoveAll("testdata/Videos")
+
+	require.NoError(t, os.Chdir("testdata/Videos"))
+	defer os.Chdir("../..")
+
+	writeEpisodeJSONs(tvMazeShow)
+
+	file, err := os.Open("show1/1/first/episode.json")
+	require.NoError(t, err)
+
+	episode := &SingleEpisode{}
+	require.NoError(t, json.NewDecoder(file).Decode(episode))
+
+	assert.Equal(t, tvMazeShow.Name, episode.ShowName)
+	assert.Equal(t, tvMazeShow.Embedded.Episodes[0].Season, episode.SeasonNumber)
+	assert.Equal(t, tvMazeShow.Embedded.Episodes[0].Name, episode.Name)
+	assert.Equal(t, "show1/1/S01E01_bar.mp4", episode.VideoURL)
 }
-
-//func TestMapFoundShowToDiskContent(t *testing.T) {
-//file, err := os.Open("testdata/searchResults.json")
-//require.NoError(t, err)
-
-//show := &TvMazeShow{}
-//require.NoError(t, json.NewDecoder(file).Decode(show))
-
-//fmt.Printf("show = %+v\n", show)
-//}
 
 func copyR(src, dest string) {
 	filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
