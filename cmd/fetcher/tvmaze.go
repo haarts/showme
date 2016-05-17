@@ -14,7 +14,7 @@ type TvMazeEpisode struct {
 	ID      int64  `json:"id"`
 	Name    string `json:"name"`
 	Season  int64  `json:"season"`
-	Episode int64  `json:"episode"`
+	Episode int64  `json:"number"`
 	Summary string `json:"summary"`
 	//AirDate time.Time `json:"airdate"`
 	Image struct {
