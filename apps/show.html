@@ -1,0 +1,28 @@
+<html>
+  <body>
+    <ul id="list">
+    <ul/>
+
+    <script type="text/javascript">
+      var list = document.querySelector("#list");
+
+      function createListItem(season) {
+        var link = document.createElement("a");
+        link.setAttribute("href", season);
+        var linkText = document.createTextNode(season);
+        link.appendChild(linkText);
+        var item = document.createElement("li");
+        item.appendChild(link);
+        return item;
+      }
+
+      fetch('show.json').then(function(response) {
+        return response.json();
+      }).then(function(show) {
+        for (season of show.season_urls) {
+          list.appendChild(createListItem(season));
+        }
+      });
+    </script>
+  </body>
+</html>

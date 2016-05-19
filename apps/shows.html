@@ -1,0 +1,28 @@
+<html>
+  <body>
+    <ul id="list">
+    <ul/>
+
+    <script type="text/javascript">
+      var list = document.querySelector("#list");
+
+      function createListItem(show) {
+        var link = document.createElement("a");
+        link.setAttribute("href", show.url);
+        var linkText = document.createTextNode(show.name);
+        link.appendChild(linkText);
+        var item = document.createElement("li");
+        item.appendChild(link);
+        return item;
+      }
+
+      fetch('shows.json').then(function(response) {
+        return response.json();
+      }).then(function(shows) {
+        for (show of shows) {
+          list.appendChild(createListItem(show));
+        }
+      });
+    </script>
+  </body>
+</html>

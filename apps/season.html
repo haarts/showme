@@ -1,0 +1,28 @@
+<html>
+  <body>
+    <ul id="list">
+    <ul/>
+
+    <script type="text/javascript">
+      var list = document.querySelector("#list");
+
+      function createListItem(episode) {
+        var link = document.createElement("a");
+        link.setAttribute("href", episode.url);
+        var linkText = document.createTextNode(episode.number + " - " + episode.name);
+        link.appendChild(linkText);
+        var item = document.createElement("li");
+        item.appendChild(link);
+        return item;
+      }
+
+      fetch('season.json').then(function(response) {
+        return response.json();
+      }).then(function(season) {
+        for (episode of season.episodes) {
+          list.appendChild(createListItem(episode));
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+<html>
+  <body>
+    <div id="title">
+    </div>
+    <video id="player" width="320" height="240" controls>
+    </video>
+
+    <script type="text/javascript">
+      fetch('episode.json').then(function(response) {
+        return response.json();
+      }).then(function(episode) {
+        var title = document.querySelector("#title");
+        title.appendChild(document.createTextNode(episode.show_name + " - " + episode.name));
+
+        var player = document.getElementById("player");
+        var source = document.createElement("source");
+        source.setAttribute("src", "/" + episode.video_url);
+        player.appendChild(source);
+      });
+    </script>
+  </body>
+</html>
