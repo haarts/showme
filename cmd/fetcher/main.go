@@ -90,13 +90,13 @@ func loadShowApp() error {
 
 func loadSeasonApp() error {
 	var err error
-	seasonApp, err = loadApp("app/season.html")()
+	seasonApp, err = loadApp("apps/season.html")()
 	return err
 }
 
 func loadEpisodeApp() error {
 	var err error
-	episodeApp, err = loadApp("app/episode.html")()
+	episodeApp, err = loadApp("apps/episode.html")()
 	return err
 }
 
