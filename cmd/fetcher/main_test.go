@@ -179,7 +179,7 @@ func TestCreateSeasonJSON(t *testing.T) {
 	require.NoError(t, os.Chdir("testdata/Videos"))
 	defer os.Chdir("../..")
 
-	writeSeasonJSONs(tvMazeShow)
+	writeSeasons(tvMazeShow)
 
 	file, err := os.Open("show1/1/season.json")
 	require.NoError(t, err)
@@ -222,7 +222,7 @@ func TestCreateEpisodeJSON(t *testing.T) {
 	require.NoError(t, os.Chdir("testdata/Videos"))
 	defer os.Chdir("../..")
 
-	writeEpisodeJSONs(tvMazeShow)
+	writeEpisodes(tvMazeShow)
 
 	file, err := os.Open("show1/1/first/episode.json")
 	require.NoError(t, err)
