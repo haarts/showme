@@ -76,6 +76,12 @@ func seasons(show *TvMazeShow) []int {
 	return unique(seasons)
 }
 
+func loadShowsApp() error {
+	var err error
+	showsApp, err = loadApp("apps/shows.html")()
+	return err
+}
+
 func loadShowApp() error {
 	var err error
 	showApp, err = loadApp("apps/show.html")()

@@ -57,9 +57,3 @@ func writeShows(shows []ShowInList) {
 	writeShowsJSON(shows)
 	writeShowsApp()
 }
-
-func loadShowsApp() error {
-	var err error
-	showsApp, err = loadApp("apps/shows.html")()
-	return err
-}
