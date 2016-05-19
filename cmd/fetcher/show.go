@@ -20,6 +20,24 @@ type SingleShow struct {
 	SeasonURLs []string `json:"season_urls"`
 }
 
+func writeShow(show *TvMazeShow) {
+	writeShowJSON(show)
+	writeShowApp(show.Name)
+}
+
+func writeShowApp(showName string) {
+	app, err := os.Create(path.Join(showName, "index.html"))
+	if err != nil {
+		log.WithField("err", err).Error("Error creating index.html in show root")
+		return
+	}
+	_, err = app.Write(showApp)
+	if err != nil {
+		log.WithField("err", err).Error("Error writing index.html in show root")
+		return
+	}
+}
+
 func writeShowJSON(show *TvMazeShow) error {
 	singleShow := SingleShow{
 		Name:       show.Name,

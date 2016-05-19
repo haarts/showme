@@ -151,9 +151,9 @@ func main() {
 			show := convertToShowInList(tvMazeShow)
 			shows = append(shows, show)
 
-			writeShowJSON(tvMazeShow)     // 1x show.json
-			writeSeasonJSONs(tvMazeShow)  // Nx season.json
-			writeEpisodeJSONs(tvMazeShow) // Mx episode.json
+			writeShow(tvMazeShow)     // 1x show.json
+			writeSeasons(tvMazeShow)  // Nx season.json
+			writeEpisodes(tvMazeShow) // Mx episode.json
 		}
 	}
 

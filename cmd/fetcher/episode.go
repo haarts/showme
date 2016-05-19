@@ -33,7 +33,45 @@ func urlify(name string) string {
 	return re.ReplaceAllString(name, "-")
 }
 
-func writeEpisodeJSON(episode SingleEpisode) error {
+func writeEpisodes(show *TvMazeShow) {
+	for _, seasonNumber := range seasons(show) {
+		if _, err := os.Stat(path.Join(show.Name, strconv.Itoa(seasonNumber))); err != nil {
+			log.WithFields(log.Fields{
+				"err":    err,
+				"season": seasonNumber,
+				"show":   show.Name,
+			}).Warn("season not found on disk, skipping")
+			continue
+		}
+
+		for _, episode := range episodes(seasonNumber, show) {
+			writeEpisodeJSON(episode)
+			writeEpisodeApp(episode)
+		}
+	}
+
+}
+
+func writeEpisodeApp(episode SingleEpisode) {
+	episodeDir := path.Join(
+		episode.ShowName,
+		strconv.Itoa(episode.SeasonNumber),
+		urlify(episode.Name),
+	)
+
+	app, err := os.Create(path.Join(episodeDir, "index.html"))
+	if err != nil {
+		log.WithField("err", err).Error("Error creating index.html in shows root")
+		return
+	}
+	_, err = app.Write(episodeApp)
+	if err != nil {
+		log.WithField("err", err).Error("Error writing index.html in shows root")
+		return
+	}
+}
+
+func writeEpisodeJSON(episode SingleEpisode) {
 	episodeDir := path.Join(
 		episode.ShowName,
 		strconv.Itoa(episode.SeasonNumber),
@@ -43,7 +81,8 @@ func writeEpisodeJSON(episode SingleEpisode) error {
 	if _, err := os.Stat(episodeDir); err != nil {
 		err := os.Mkdir(episodeDir, 0744)
 		if err != nil {
-			return err
+			log.WithField("err", err).Error("failed to create episode directory")
+			return
 		}
 	}
 
@@ -52,21 +91,25 @@ func writeEpisodeJSON(episode SingleEpisode) error {
 		"episode.json"),
 	)
 	if err != nil {
-		log.WithField("err", err).Warn("failed to create episode.json")
-		return err
+		log.WithFields(log.Fields{
+			"err": err,
+			"dir": episodeDir,
+		}).Warn("failed to create episode.json")
+		return
 	}
 	defer file.Close()
 
 	if err := json.NewEncoder(file).Encode(episode); err != nil {
-		log.WithField("err", err).Warn("failed to encode to episode.json")
-		return err
+		log.WithFields(log.Fields{
+			"err": err,
+			"dir": episodeDir,
+		}).Warn("failed to encode to episode.json")
+		return
 	}
 
 	log.WithFields(log.Fields{
 		"file": file.Name(),
 	}).Debug("episode written to disk")
-
-	return nil
 }
 
 func episodes(seasonNumber int, show *TvMazeShow) []SingleEpisode {
@@ -107,29 +150,6 @@ func episodes(seasonNumber int, show *TvMazeShow) []SingleEpisode {
 	}
 
 	return episodes
-}
-
-func writeEpisodeJSONs(show *TvMazeShow) {
-	for _, seasonNumber := range seasons(show) {
-		if _, err := os.Stat(path.Join(show.Name, strconv.Itoa(seasonNumber))); err != nil {
-			log.WithFields(log.Fields{
-				"err":    err,
-				"season": seasonNumber,
-				"show":   show.Name,
-			}).Warn("season not found on disk, skipping")
-			continue
-		}
-
-		for _, episode := range episodes(seasonNumber, show) {
-			if err := writeEpisodeJSON(episode); err != nil {
-				log.WithFields(log.Fields{
-					"err":     err,
-					"season":  seasonNumber,
-					"episode": episode.Number,
-				}).Error("Error writing episode")
-			}
-		}
-	}
 }
 
 func episodeVideoFile(seasonDir string, episode TvMazeEpisode) string {

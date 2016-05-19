@@ -27,40 +27,46 @@ type internalEpisode struct {
 	URL string `json:"url"`
 }
 
-func writeSeasonJSON(seasonNumber int, show *TvMazeShow) error {
-	file, err := os.Create(path.Join(show.Name, strconv.Itoa(seasonNumber), "season.json"))
-	if err != nil {
-		log.WithField("err", err).Warn("failed to create show.json")
-		return err
-	}
-	defer file.Close()
-
-	if err := json.NewEncoder(file).Encode(season(seasonNumber, show)); err != nil {
-		log.WithField("err", err).Warn("failed to encode")
-		return err
-	}
-
-	log.WithFields(log.Fields{
-		"file": file.Name(),
-	}).Info("season written to disk")
-
-	return nil
-}
-
-func writeSeasonJSONs(show *TvMazeShow) {
+func writeSeasons(show *TvMazeShow) {
 	for _, seasonNumber := range seasons(show) {
 		if _, err := os.Stat(path.Join(show.Name, strconv.Itoa(seasonNumber))); err != nil {
 			continue
 		}
 
-		// TODO perhaps I can drop it on the floor here? Eg not return anything in writeSeasonJSON
-		if err := writeSeasonJSON(seasonNumber, show); err != nil {
-			log.WithFields(log.Fields{
-				"err":    err,
-				"season": seasonNumber,
-			}).Error("Error writing season")
-		}
+		writeSeasonJSON(seasonNumber, show)
+		writeSeasonApp(show.Name, strconv.Itoa(seasonNumber))
 	}
+}
+
+func writeSeasonApp(showName, seasonNumber string) {
+	app, err := os.Create(path.Join(showName, seasonNumber, "index.html"))
+	if err != nil {
+		log.WithField("err", err).Error("Error creating index.html in show root")
+		return
+	}
+	_, err = app.Write(seasonApp)
+	if err != nil {
+		log.WithField("err", err).Error("Error writing index.html in show root")
+		return
+	}
+}
+
+func writeSeasonJSON(seasonNumber int, show *TvMazeShow) {
+	file, err := os.Create(path.Join(show.Name, strconv.Itoa(seasonNumber), "season.json"))
+	if err != nil {
+		log.WithField("err", err).Warn("failed to create show.json")
+		return
+	}
+	defer file.Close()
+
+	if err := json.NewEncoder(file).Encode(season(seasonNumber, show)); err != nil {
+		log.WithField("err", err).Warn("failed to encode")
+		return
+	}
+
+	log.WithFields(log.Fields{
+		"file": file.Name(),
+	}).Info("season written to disk")
 }
 
 func season(number int, show *TvMazeShow) Season {
