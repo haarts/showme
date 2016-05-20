@@ -167,8 +167,13 @@ func episodeVideoFile(seasonDir string, episode TvMazeEpisode) string {
 			continue
 		}
 
-		if strings.Contains(file.Name(), fmt.Sprintf("S%02dE%02d", episode.Season, episode.Episode)) {
-			log.WithField("file", file.Name()).Debug("match")
+		if strings.Contains(file.Name(), fmt.Sprintf("S%02dE%02d", episode.Season, episode.Episode)) &&
+			strings.HasSuffix(file.Name(), "webm") {
+			log.WithFields(log.Fields{
+				"file":    file.Name(),
+				"episode": episode.Episode,
+				"season":  episode.Season,
+			}).Debug("matched video file with episode")
 			return file.Name()
 		}
 	}
