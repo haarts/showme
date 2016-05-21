@@ -79,7 +79,7 @@ func writeEpisodeJSON(episode SingleEpisode) {
 	)
 
 	if _, err := os.Stat(episodeDir); err != nil {
-		err := os.Mkdir(episodeDir, 0766)
+		err := os.Mkdir(episodeDir, 0755)
 		if err != nil {
 			log.WithField("err", err).Error("failed to create episode directory")
 			return
