@@ -1,15 +1,26 @@
 # ShowMe
-A media server with no options what so ever.
+A browser based media server with no options what so ever.
 
 I don't want all these options, it will just confuse my spouse.
 
-This project has two executables:
-- Conjoiner, this walks a directory structure containing shows and creates JSON
-  files (containing pointers to images etc etc). The resulting files are be be
-  used by ShowMe.
-- ShowMe, a trivial file server which serves up these JSONs _and_ a bunch of
-  Javascript.
+This project contains one executable called Fetcher. Run it with:
+```
+$ ./fetcher your-video-root-directory
+```
 
+Based on the required directory structure it will:
+# create a bunch of JSON files containing show information.
+# creates a subdirectory for every episode.
+# creates, in every directory, an `index.html`.
+
+These `index.html` files are 'apps'. There's a:
+# Shows app
+# Show app
+# Season app
+# Episode app
+
+Next spin up your favourite webserver with the correct document root and you're
+ready to watch, in your browser.
 
 # Required directory structure.
 ```
