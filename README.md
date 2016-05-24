@@ -8,7 +8,8 @@ This project contains one executable called Fetcher. Run it with:
 $ ./fetcher your-video-root-directory
 ```
 
-Based on the required directory structure it will:
+Based on the required directory structure and the WebM files it contains it
+will:
 # create a bunch of JSON files containing show information.
 # creates a subdirectory for every episode.
 # creates, in every directory, an `index.html`.
@@ -27,11 +28,11 @@ ready to watch, in your browser.
 shows
 |-- Name
 |    |-- 1
-|    |   |-- Name 1x01-Title.avi
-|    |   +-- Name 1x02-Title.avi
+|    |   |-- Name 1x01-Title.webm
+|    |   +-- Name 1x02-Title.webm
 |    |-- 2
-|    |   |-- Name 1x01-Title.avi
-|    |   +-- Name 1x02-Title.avi
+|    |   |-- Name 1x01-Title.webm
+|    |   +-- Name 1x02-Title.webm
 |
 |-- Other Name
      |-- 1
