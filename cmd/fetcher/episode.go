@@ -163,7 +163,7 @@ func episodeVideoFile(seasonDir string, episode TvMazeEpisode) string {
 
 	for _, file := range files {
 		if file.IsDir() {
-			log.WithField("file", file.Name()).Debug("is dir, skipping")
+			log.WithField("file", file.Name()).Debug("looking for video file found dir, skipping")
 			continue
 		}
 

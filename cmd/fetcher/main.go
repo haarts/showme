@@ -148,7 +148,7 @@ func main() {
 	shows := []ShowInList{}
 	for _, file := range files {
 		if !file.IsDir() {
-			log.WithField("file", file.Name()).Warn("skipping")
+			log.WithField("file", file.Name()).Debug("skipping")
 			continue
 		}
 
