@@ -4,6 +4,7 @@ import (
 	"flag"
 	"io/ioutil"
 	"os"
+	"path"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -131,10 +132,17 @@ func main() {
 		return
 	}
 
-	if err := os.Chdir(flag.Args()[0]); err != nil {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Fatal("Error getting working directory")
+	}
+
+	if err := os.Chdir(path.Join(dir, flag.Args()[0])); err != nil {
 		log.WithFields(log.Fields{
 			"err":  err,
-			"root": flag.Args()[0],
+			"root": path.Join(dir, flag.Args()[0]),
 		}).Fatal("Error changing working dir")
 	}
 
