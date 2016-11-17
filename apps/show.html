@@ -4,25 +4,25 @@
     <ul/>
 
     <script type="text/javascript">
-      var list = document.querySelector("#list");
+      const list = document.querySelector('#list');
 
       function createListItem(season) {
-        var link = document.createElement("a");
-        link.setAttribute("href", season);
-        var linkText = document.createTextNode(season);
+        const link = document.createElement('a');
+        link.setAttribute('href', season);
+        const linkText = document.createTextNode(season);
         link.appendChild(linkText);
-        var item = document.createElement("li");
+        const item = document.createElement('li');
         item.appendChild(link);
         return item;
       }
 
-      fetch('show.json').then(function(response) {
-        return response.json();
-      }).then(function(show) {
-        for (season of show.season_urls) {
-          list.appendChild(createListItem(season));
-        }
-      });
+      fetch('show.json')
+        .then(response => response.json())
+        .then((show) => {
+          show.season_urls
+            .map(createListItem)
+            .forEach(listItem => list.appendChild(listItem));
+        });
     </script>
   </body>
 </html>
