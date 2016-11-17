@@ -190,8 +190,8 @@ func TestCreateSeasonJSON(t *testing.T) {
 	assert.Equal(t, tvMazeShow.Name, season.Name)
 	assert.Equal(t, tvMazeShow.Summary, season.Summary)
 	assert.Equal(t, tvMazeShow.Image, season.Image)
-	assert.Equal(t, tvMazeShow.Embedded.Episodes[0].Season, season.Number)
-	assert.Len(t, season.Episodes, 2)
+	assert.Equal(t, int(tvMazeShow.Embedded.Episodes[0].Season), season.Number)
+	require.Len(t, season.Episodes, 2)
 	assert.Equal(t, "/show1/1/first", season.Episodes[0].URL)
 	assert.Equal(t, "/show1/1/second", season.Episodes[1].URL)
 }
@@ -231,9 +231,9 @@ func TestCreateEpisodeJSON(t *testing.T) {
 	require.NoError(t, json.NewDecoder(file).Decode(episode))
 
 	assert.Equal(t, tvMazeShow.Name, episode.ShowName)
-	assert.Equal(t, tvMazeShow.Embedded.Episodes[0].Season, episode.SeasonNumber)
+	assert.Equal(t, int(tvMazeShow.Embedded.Episodes[0].Season), episode.SeasonNumber)
 	assert.Equal(t, tvMazeShow.Embedded.Episodes[0].Name, episode.Name)
-	assert.Equal(t, "show1/1/S01E01_bar.mp4", episode.VideoURL)
+	assert.Equal(t, "show1/1/S01E01_bar.webm", episode.VideoURL)
 }
 
 func copyR(src, dest string) {
