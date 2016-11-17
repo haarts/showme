@@ -49,7 +49,6 @@ func writeEpisodes(show *TvMazeShow) {
 			writeEpisodeApp(episode)
 		}
 	}
-
 }
 
 func writeEpisodeApp(episode SingleEpisode) {
