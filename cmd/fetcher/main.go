@@ -139,6 +139,10 @@ func main() {
 		}).Fatal("Error getting working directory")
 	}
 
+	if len(flag.Args()) != 1 {
+		log.Fatal("Require one argument pointing to media path")
+	}
+
 	if err := os.Chdir(path.Join(dir, flag.Args()[0])); err != nil {
 		log.WithFields(log.Fields{
 			"err":  err,
