@@ -1,28 +1,28 @@
 <html>
   <body>
-    <ul id="list">
+    <ul id='list'>
     <ul/>
 
-    <script type="text/javascript">
-      var list = document.querySelector("#list");
+    <script type='text/javascript'>
+      const list = document.querySelector('#list');
 
       function createListItem(episode) {
-        var link = document.createElement("a");
-        link.setAttribute("href", episode.url);
-        var linkText = document.createTextNode(episode.number + " - " + episode.name);
+        const link = document.createElement('a');
+        link.setAttribute('href', episode.url);
+        const linkText = document.createTextNode(`${episode.number}-${episode.name}`);
         link.appendChild(linkText);
-        var item = document.createElement("li");
+        const item = document.createElement('li');
         item.appendChild(link);
         return item;
       }
 
-      fetch('season.json').then(function(response) {
-        return response.json();
-      }).then(function(season) {
-        for (episode of season.episodes) {
-          list.appendChild(createListItem(episode));
-        }
-      });
+      fetch('season.json')
+        .then(response => response.json())
+        .then((season) => {
+          season.episodes
+            .map(createListItem)
+            .forEach(listItem => list.appendChild(listItem));
+        });
     </script>
   </body>
 </html>
