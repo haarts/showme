@@ -129,7 +129,7 @@ func episodes(seasonNumber int, show *TvMazeShow) []SingleEpisode {
 				"episode": episode.Episode,
 				"name":    episode.Name,
 				"path":    path.Join(show.Name, strconv.Itoa(seasonNumber)),
-			}).Warn("episode doesn't exists on disk, skipping")
+			}).Warn("episode doesn't exists on disk or has the wrong format, skipping")
 			continue
 		}
 
