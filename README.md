@@ -1,4 +1,7 @@
 # ShowMe
+[![Build
+Status](https://snap-ci.com/haarts/showme/branch/master/build_image)](https://snap-ci.com/haarts/showme/branch/master)
+
 A browser based media server with no options what so ever.
 
 I don't want all these options, it will just confuse my spouse.
