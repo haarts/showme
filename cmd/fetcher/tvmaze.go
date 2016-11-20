@@ -43,18 +43,21 @@ type TvMazeClient struct {
 func (t TvMazeClient) Find(q string) (*TvMazeShow, error) {
 	response, err := http.Get(fmt.Sprintf(
 		t.URLTemplate, q))
+	contextLogger := t.logger.WithField("url", response.Request.URL)
+	contextLogger.Debug("Querying TVMaze")
+
 	if err != nil {
-		t.logger.WithField("err", err).Error("Failed to get a response")
+		contextLogger.WithField("err", err).Error("Failed to get a response")
 		return nil, err
 	}
 	if response.StatusCode == 404 {
-		t.logger.Warn("No match found")
+		contextLogger.Warn("No match found")
 		return nil, err
 	}
 
 	show := &TvMazeShow{}
 	if err := json.NewDecoder(response.Body).Decode(show); err != nil {
-		t.logger.WithField("err", err).Error("Failed to decode")
+		contextLogger.WithField("err", err).Error("Failed to decode")
 		return nil, err
 	}
 
