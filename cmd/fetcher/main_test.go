@@ -15,36 +15,39 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var tvMazeShow = &TvMazeShow{
-	Name: "show1",
-	Embedded: struct {
-		Episodes []TvMazeEpisode `json:"episodes"`
-	}{
-		Episodes: []TvMazeEpisode{
-			TvMazeEpisode{
-				Name:    "first",
-				Episode: int64(1),
-				Season:  int64(1), // fine, exists on disk
-			},
-			TvMazeEpisode{
-				Name:    "second",
-				Episode: int64(2),
-				Season:  int64(1), // fine, exists on disk
-			},
-			TvMazeEpisode{
-				Name:    "third",
-				Episode: int64(3),
-				Season:  int64(1), // not fine, absent on disk
-			},
-			TvMazeEpisode{
-				Name:    "first in second",
-				Episode: int64(1),
-				Season:  int64(2), // not fine, absent on disk
-			},
-			TvMazeEpisode{
-				Name:    "first in second",
-				Episode: int64(1),
-				Season:  int64(3), // not fine, absent on disk
+var tvMazeShow = &show{
+	path: "show1",
+	TvMazeShow: TvMazeShow{
+		Name: "show1",
+		Embedded: struct {
+			Episodes []TvMazeEpisode `json:"episodes"`
+		}{
+			Episodes: []TvMazeEpisode{
+				TvMazeEpisode{
+					Name:    "first",
+					Episode: int64(1),
+					Season:  int64(1), // fine, exists on disk
+				},
+				TvMazeEpisode{
+					Name:    "second",
+					Episode: int64(2),
+					Season:  int64(1), // fine, exists on disk
+				},
+				TvMazeEpisode{
+					Name:    "third",
+					Episode: int64(3),
+					Season:  int64(1), // not fine, absent on disk
+				},
+				TvMazeEpisode{
+					Name:    "first in second",
+					Episode: int64(1),
+					Season:  int64(2), // not fine, absent on disk
+				},
+				TvMazeEpisode{
+					Name:    "first in second",
+					Episode: int64(1),
+					Season:  int64(3), // not fine, absent on disk
+				},
 			},
 		},
 	},
@@ -89,23 +92,26 @@ func TestGoodEnoughMatch(t *testing.T) {
 }
 
 func TestConvertToShowInList(t *testing.T) {
-	tvMazeShow := &TvMazeShow{
-		Name:    "foo",
-		Summary: "bar",
-		Image: struct {
-			Medium   string `json:"medium"`
-			Original string `json:"original"`
-		}{
-			Medium:   "baz",
-			Original: "buzz",
+	show := &show{
+		path: "foo",
+		TvMazeShow: TvMazeShow{
+			Name:    "foo",
+			Summary: "bar",
+			Image: struct {
+				Medium   string `json:"medium"`
+				Original string `json:"original"`
+			}{
+				Medium:   "baz",
+				Original: "buzz",
+			},
 		},
 	}
 
-	show := convertToShowInList(tvMazeShow)
+	showInList := convertToShowInList(show)
 
-	assert.Equal(t, show.URL, "/foo")
-	assert.Equal(t, show.Name, "foo")
-	assert.NotNil(t, show.Image)
+	assert.Equal(t, showInList.URL, "/foo")
+	assert.Equal(t, showInList.Name, "foo")
+	assert.NotNil(t, showInList.Image)
 }
 
 func TestCreateShowsJSON(t *testing.T) {

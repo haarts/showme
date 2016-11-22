@@ -27,19 +27,19 @@ type internalEpisode struct {
 	URL string `json:"url"`
 }
 
-func writeSeasons(show *TvMazeShow) {
+func writeSeasons(show *show) {
 	for _, seasonNumber := range seasons(show) {
-		if _, err := os.Stat(path.Join(show.Name, strconv.Itoa(seasonNumber))); err != nil {
+		if _, err := os.Stat(path.Join(show.path, strconv.Itoa(seasonNumber))); err != nil {
 			continue
 		}
 
 		writeSeasonJSON(seasonNumber, show)
-		writeSeasonApp(show.Name, strconv.Itoa(seasonNumber))
+		writeSeasonApp(show.path, strconv.Itoa(seasonNumber))
 	}
 }
 
-func writeSeasonApp(showName, seasonNumber string) {
-	app, err := os.Create(path.Join(showName, seasonNumber, "index.html"))
+func writeSeasonApp(showPath, seasonNumber string) {
+	app, err := os.Create(path.Join(showPath, seasonNumber, "index.html"))
 	if err != nil {
 		log.WithField("err", err).Error("Error creating index.html in show root")
 		return
@@ -51,8 +51,8 @@ func writeSeasonApp(showName, seasonNumber string) {
 	}
 }
 
-func writeSeasonJSON(seasonNumber int, show *TvMazeShow) {
-	file, err := os.Create(path.Join(show.Name, strconv.Itoa(seasonNumber), "season.json"))
+func writeSeasonJSON(seasonNumber int, show *show) {
+	file, err := os.Create(path.Join(show.path, strconv.Itoa(seasonNumber), "season.json"))
 	if err != nil {
 		log.WithField("err", err).Warn("failed to create show.json")
 		return
@@ -69,7 +69,7 @@ func writeSeasonJSON(seasonNumber int, show *TvMazeShow) {
 	}).Info("season written to disk")
 }
 
-func season(number int, show *TvMazeShow) Season {
+func season(number int, show *show) Season {
 	season := Season{
 		Name:    show.Name,
 		Summary: show.Summary,
@@ -85,7 +85,7 @@ func season(number int, show *TvMazeShow) Season {
 		}
 
 		// Check if episode exists on disk
-		if !episodeExists(path.Join(show.Name, strconv.Itoa(number)), episode) {
+		if !episodeExists(path.Join(show.path, strconv.Itoa(number)), episode) {
 			continue
 		}
 
@@ -96,7 +96,7 @@ func season(number int, show *TvMazeShow) Season {
 				Summary: episode.Summary,
 				Image:   episode.Image,
 			},
-			URL: "/" + path.Join(show.Name, strconv.Itoa(number), urlify(episode.Name)),
+			URL: "/" + path.Join(show.path, strconv.Itoa(number), urlify(episode.Name)),
 		})
 	}
 

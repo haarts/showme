@@ -20,9 +20,9 @@ type SingleShow struct {
 	SeasonURLs []string `json:"season_urls"`
 }
 
-func writeShow(show *TvMazeShow) {
+func writeShow(show *show) {
 	writeShowJSON(show)
-	writeShowApp(show.Name)
+	writeShowApp(show.path)
 }
 
 func writeShowApp(showName string) {
@@ -38,7 +38,7 @@ func writeShowApp(showName string) {
 	}
 }
 
-func writeShowJSON(show *TvMazeShow) error {
+func writeShowJSON(show *show) error {
 	singleShow := SingleShow{
 		Name:       show.Name,
 		Summary:    show.Summary,
@@ -47,12 +47,12 @@ func writeShowJSON(show *TvMazeShow) error {
 	}
 
 	for _, season := range seasons(show) {
-		if _, err := os.Stat(path.Join(show.Name, strconv.Itoa(season))); err == nil {
-			singleShow.SeasonURLs = append(singleShow.SeasonURLs, "/"+show.Name+"/"+strconv.Itoa(season))
+		if _, err := os.Stat(path.Join(show.path, strconv.Itoa(season))); err == nil {
+			singleShow.SeasonURLs = append(singleShow.SeasonURLs, "/"+show.path+"/"+strconv.Itoa(season))
 		}
 	}
 
-	file, err := os.Create(path.Join(show.Name, "show.json"))
+	file, err := os.Create(path.Join(show.path, "show.json"))
 	if err != nil {
 		log.WithField("err", err).Warn("failed to create show.json")
 		return err

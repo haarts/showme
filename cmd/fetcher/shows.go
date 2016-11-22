@@ -18,12 +18,12 @@ type ShowInList struct {
 	URL string `json:"url"`
 }
 
-func convertToShowInList(show *TvMazeShow) ShowInList {
+func convertToShowInList(show *show) ShowInList {
 	return ShowInList{
 		Name:    show.Name,
 		Summary: show.Summary,
 		Image:   show.Image,
-		URL:     "/" + show.Name,
+		URL:     "/" + show.path,
 	}
 }
 

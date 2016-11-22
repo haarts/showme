@@ -33,27 +33,28 @@ func urlify(name string) string {
 	return re.ReplaceAllString(name, "-")
 }
 
-func writeEpisodes(show *TvMazeShow) {
+func writeEpisodes(show *show) {
 	for _, seasonNumber := range seasons(show) {
-		if _, err := os.Stat(path.Join(show.Name, strconv.Itoa(seasonNumber))); err != nil {
+		if _, err := os.Stat(path.Join(show.path, strconv.Itoa(seasonNumber))); err != nil {
 			log.WithFields(log.Fields{
 				"err":    err,
 				"season": seasonNumber,
 				"show":   show.Name,
+				"path":   show.path,
 			}).Warn("season not found on disk, skipping")
 			continue
 		}
 
 		for _, episode := range episodes(seasonNumber, show) {
-			writeEpisodeJSON(episode)
-			writeEpisodeApp(episode)
+			writeEpisodeJSON(show.path, episode)
+			writeEpisodeApp(show.path, episode)
 		}
 	}
 }
 
-func writeEpisodeApp(episode SingleEpisode) {
+func writeEpisodeApp(rootPath string, episode SingleEpisode) {
 	episodeDir := path.Join(
-		episode.ShowName,
+		rootPath,
 		strconv.Itoa(episode.SeasonNumber),
 		urlify(episode.Name),
 	)
@@ -70,9 +71,9 @@ func writeEpisodeApp(episode SingleEpisode) {
 	}
 }
 
-func writeEpisodeJSON(episode SingleEpisode) {
+func writeEpisodeJSON(rootPath string, episode SingleEpisode) {
 	episodeDir := path.Join(
-		episode.ShowName,
+		rootPath,
 		strconv.Itoa(episode.SeasonNumber),
 		urlify(episode.Name),
 	)
@@ -111,7 +112,7 @@ func writeEpisodeJSON(episode SingleEpisode) {
 	}).Debug("episode written to disk")
 }
 
-func episodes(seasonNumber int, show *TvMazeShow) []SingleEpisode {
+func episodes(seasonNumber int, show *show) []SingleEpisode {
 	episodes := []SingleEpisode{}
 
 	for _, episode := range show.Embedded.Episodes {
@@ -141,8 +142,8 @@ func episodes(seasonNumber int, show *TvMazeShow) []SingleEpisode {
 				Image:   episode.Image,
 			},
 
-			VideoURL: path.Join(show.Name, strconv.Itoa(seasonNumber), episodeVideoFile(
-				path.Join(show.Name, strconv.Itoa(seasonNumber)), episode)),
+			VideoURL: path.Join(show.path, strconv.Itoa(seasonNumber), episodeVideoFile(
+				path.Join(show.path, strconv.Itoa(seasonNumber)), episode)),
 			ShowName:     show.Name,
 			SeasonNumber: seasonNumber,
 		})

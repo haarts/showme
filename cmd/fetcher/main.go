@@ -35,7 +35,12 @@ type commonEpisode struct {
 	} `json:"image"`
 }
 
-func findMatchingShow(filename string) *TvMazeShow {
+type show struct {
+	TvMazeShow
+	path string
+}
+
+func findMatchingShow(filename string) *show {
 	contextLogger := log.WithField("file", filename)
 	tvMaze := TvMazeClient{
 		logger: contextLogger,
@@ -48,7 +53,10 @@ func findMatchingShow(filename string) *TvMazeShow {
 	}
 	contextLogger.WithField("show", tvMazeShow.Name).Debug("Found match")
 
-	return tvMazeShow
+	return &show{
+		TvMazeShow: *tvMazeShow,
+		path:       filename,
+	}
 }
 
 func goodEnoughMatch(s1, s2 string) bool {
@@ -75,7 +83,7 @@ func unique(list []int) []int {
 	return unique
 }
 
-func seasons(show *TvMazeShow) []int {
+func seasons(show *show) []int {
 	seasons := []int{}
 	for _, episode := range show.Embedded.Episodes {
 		seasons = append(seasons, int(episode.Season))
@@ -171,14 +179,14 @@ func main() {
 			continue
 		}
 
-		tvMazeShow := findMatchingShow(file.Name())
-		if tvMazeShow != nil {
-			show := convertToShowInList(tvMazeShow)
-			shows = append(shows, show)
+		show := findMatchingShow(file.Name())
+		if show != nil {
+			showInList := convertToShowInList(show)
+			shows = append(shows, showInList)
 
-			writeShow(tvMazeShow)     // 1x show.json
-			writeSeasons(tvMazeShow)  // Nx season.json
-			writeEpisodes(tvMazeShow) // Mx episode.json
+			writeShow(show)     // 1x show.json
+			writeSeasons(show)  // Nx season.json
+			writeEpisodes(show) // Mx episode.json
 		}
 	}
 
