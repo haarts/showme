@@ -7,6 +7,7 @@ import (
 	"path"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/xrash/smetrics"
 )
 
 var logLevel int
@@ -49,6 +50,13 @@ func findMatchingShow(file os.FileInfo) *TvMazeShow {
 	contextLogger.WithField("show", tvMazeShow.Name).Debug("Found match")
 
 	return tvMazeShow
+}
+
+func goodEnoughMatch(s1, s2 string) bool {
+	if smetrics.JaroWinkler(s1, s2, 0.7, 8) < 0.95 {
+		return false
+	}
+	return true
 }
 
 func unique(list []int) []int {

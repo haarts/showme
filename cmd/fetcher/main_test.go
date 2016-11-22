@@ -47,6 +47,26 @@ var tvMazeShow = &TvMazeShow{
 	},
 }
 
+func TestGoodEnoughMatch(t *testing.T) {
+	table := []struct {
+		s1             string
+		s2             string
+		expectedResult bool
+	}{
+		{"The Returned", "The Returned", true},
+		{"The Returned (US)", "The Returned", true},
+		{"The Daily Show with Trevor Noah", "The Daily Show", true},
+		{"Ice Girl", "Mr. Robot", false},
+	}
+
+	for _, v := range table {
+		assert.Equal(t,
+			v.expectedResult,
+			goodEnoughMatch(v.s1, v.s2),
+			fmt.Sprintf("expected '%s' and '%s' to have equality '%t'", v.s1, v.s2, v.expectedResult))
+	}
+}
+
 func TestConvertToShowInList(t *testing.T) {
 	tvMazeShow := &TvMazeShow{
 		Name:    "foo",
