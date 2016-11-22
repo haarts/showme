@@ -35,15 +35,15 @@ type commonEpisode struct {
 	} `json:"image"`
 }
 
-func findMatchingShow(file os.FileInfo) *TvMazeShow {
-	contextLogger := log.WithField("file", file.Name())
+func findMatchingShow(filename string) *TvMazeShow {
+	contextLogger := log.WithField("file", filename)
 	tvMaze := TvMazeClient{
 		URLTemplate: tvMazeURLTemplate,
 		logger:      contextLogger,
 	}
 
-	tvMazeShow, err := tvMaze.Find(file.Name())
 	if err != nil || tvMazeShow == nil {
+	tvMazeShow, err := tvMaze.Find(filename)
 		contextLogger.Debug("No match")
 		return nil
 	}
@@ -172,7 +172,7 @@ func main() {
 			continue
 		}
 
-		tvMazeShow := findMatchingShow(file)
+		tvMazeShow := findMatchingShow(file.Name())
 		if tvMazeShow != nil {
 			show := convertToShowInList(tvMazeShow)
 			shows = append(shows, show)
