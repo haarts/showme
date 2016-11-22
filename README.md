@@ -13,15 +13,15 @@ $ ./fetcher your-video-root-directory
 
 Based on the required directory structure and the WebM files it contains it
 will:
-# create a bunch of JSON files containing show information.
-# creates a subdirectory for every episode.
-# creates, in every directory, an `index.html`.
+1. create a bunch of JSON files containing show information.
+1. creates a subdirectory for every episode.
+1. creates, in every directory, an `index.html`.
 
 These `index.html` files are 'apps'. There's a:
-# Shows app
-# Show app
-# Season app
-# Episode app
+1. Shows app
+1. Show app
+1. Season app
+1. Episode app
 
 Next spin up your favourite webserver with the correct document root and you're
 ready to watch, in your browser.

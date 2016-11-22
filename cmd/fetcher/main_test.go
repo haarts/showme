@@ -137,6 +137,15 @@ func TestCreateShowsJSON(t *testing.T) {
 	]`
 
 	assert.NotNil(t, expected)
+
+	//copyR("testdata/Videos_template", "testdata/Videos")
+	//defer os.RemoveAll("testdata/Videos")
+
+	//require.NoError(t, os.Chdir("testdata/Videos"))
+	//defer os.Chdir("../..")
+
+	//_, err := os.Open("shows.json")
+	//require.NoError(t, err)
 }
 
 func TestCreateShowJSON(t *testing.T) {
