@@ -41,8 +41,8 @@ func findMatchingShow(filename string) *TvMazeShow {
 		logger: contextLogger,
 	}
 
-	if err != nil || tvMazeShow == nil {
 	tvMazeShow, err := tvMaze.Find(filename)
+	if err != nil || tvMazeShow == nil || !goodEnoughMatch(filename, tvMazeShow.Name) {
 		contextLogger.Debug("No match")
 		return nil
 	}
