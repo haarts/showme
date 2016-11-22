@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/Sirupsen/logrus"
 )
-
-var tvMazeURLTemplate = "http://api.tvmaze.com/singlesearch/shows?q=%s&embed=episodes"
 
 type TvMazeEpisode struct {
 	ID      int64  `json:"id"`
@@ -36,16 +35,15 @@ type TvMazeShow struct {
 }
 
 type TvMazeClient struct {
-	URLTemplate string
-	logger      *logrus.Entry
+	logger *logrus.Entry
 }
 
 func (t TvMazeClient) Find(q string) (*TvMazeShow, error) {
-	response, err := http.Get(fmt.Sprintf(
-		t.URLTemplate, q))
-	contextLogger := t.logger.WithField("url", response.Request.URL)
+	query := fmt.Sprintf(os.Getenv("TVMAZE_URL_TEMPLATE"), q)
+	contextLogger := t.logger.WithField("url", query)
 	contextLogger.Debug("Querying TVMaze")
 
+	response, err := http.Get(query)
 	if err != nil {
 		contextLogger.WithField("err", err).Error("Failed to get a response")
 		return nil, err

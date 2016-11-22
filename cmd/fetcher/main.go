@@ -38,8 +38,7 @@ type commonEpisode struct {
 func findMatchingShow(filename string) *TvMazeShow {
 	contextLogger := log.WithField("file", filename)
 	tvMaze := TvMazeClient{
-		URLTemplate: tvMazeURLTemplate,
-		logger:      contextLogger,
+		logger: contextLogger,
 	}
 
 	if err != nil || tvMazeShow == nil {

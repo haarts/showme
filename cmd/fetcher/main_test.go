@@ -2,7 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -45,6 +48,24 @@ var tvMazeShow = &TvMazeShow{
 			},
 		},
 	},
+}
+
+func TestFindMatchingShowWithoutClearMatch(t *testing.T) {
+	ts := httptest.NewServer(http.DefaultServeMux)
+	defer ts.Close()
+
+	http.DefaultServeMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "GET", r.Method)
+
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, `{
+			"name": "not matching"
+		}`)
+	})
+	os.Setenv("TVMAZE_URL_TEMPLATE", ts.URL+"/%s")
+
+	show := findMatchingShow("something else")
+	assert.Nil(t, show)
 }
 
 func TestGoodEnoughMatch(t *testing.T) {
