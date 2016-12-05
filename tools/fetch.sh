@@ -1,6 +1,7 @@
 #!/bin/bash -e
 
 while true; do
+  start=$(date --iso-8601=seconds)
   original_file=$(ssh -p$2 $1 ./first.sh)
   echo Found to be converted file: $original_file
   esc=$(echo $original_file | sed -e 's/ /\\ /g')
@@ -34,4 +35,6 @@ while true; do
   scp -P$2 "$transcoded_file" "$1:./$(dirname "$esc")/$transcoded_file"
   rm "$transcoded_file"
   rm "$(basename "$original_file")"
+  stop=$(date --iso-8601=seconds)
+  echo $start,$stop,$original_file >> counter-$(hostname).csv
 done
