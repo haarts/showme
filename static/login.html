@@ -1,0 +1,40 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <form id='login-form' action="/login" method="post">
+      <input type="text" name="username">
+      <input type="text" name="password">
+      <input type="submit">
+    </form>
+    <script type='text/javascript'>
+      const form = document.getElementById('login-form');
+      form.addEventListener('submit', (event) => {
+        const data = new FormData(form);
+        const postRepresentation = new URLSearchParams();
+        postRepresentation.set('username', data.get('username'));
+        postRepresentation.set('password', data.get('password'));
+
+        event.preventDefault();
+
+        fetch('/login', {
+          method: 'POST',
+          body: postRepresentation,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+          },
+        })
+          .then((response) => {
+            if (response.status === 200) {
+              console.log('200');
+            } else if (response.status === 401) {
+              console.log('401');
+            } else {
+              console.log('we got a weird return');
+              console.log(response);
+            }
+          });
+      });
+    </script>
+  </body>
+</html>
