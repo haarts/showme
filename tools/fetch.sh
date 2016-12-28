@@ -4,14 +4,11 @@ while true; do
   start=$(date --iso-8601=seconds)
   original_file=$(ssh -p$2 $1 ./first.sh)
   echo Found to be converted file: $original_file
-  esc=$(echo $original_file | sed -e 's/ /\\ /g')
-  # \x27 is a single quote
-  esc=$(echo $esc | sed -e "s/'/\\\'/g")
+  esc=$(printf %q "$original_file")
   echo $esc
   scp -P$2 "$1:./$esc" .
   transcoded_file=$(echo $(basename "$esc") | sed -e 's/\(mp4\|mkv\|avi\)/webm/')
   echo $transcoded_file
-  #transcoded_file=$(echo $(basename "$esc") | sed -e 's/\(mp4\|mkv\|avi\)/webm/')
 
   echo First pass
   ffmpeg -loglevel error -hide_banner -stats -nostdin \
