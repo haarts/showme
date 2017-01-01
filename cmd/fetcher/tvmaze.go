@@ -39,7 +39,7 @@ type TvMazeClient struct {
 }
 
 func (t TvMazeClient) Find(q string) (*TvMazeShow, error) {
-	query := fmt.Sprintf(os.Getenv("TVMAZE_URL_TEMPLATE"), q)
+	query := fmt.Sprintf(t.urlTemplate(), q)
 	contextLogger := t.logger.WithField("url", query)
 	contextLogger.Debug("Querying TVMaze")
 
@@ -60,4 +60,14 @@ func (t TvMazeClient) Find(q string) (*TvMazeShow, error) {
 	}
 
 	return show, nil
+}
+
+func (t TvMazeClient) urlTemplate() string {
+	env := os.Getenv("TVMAZE_URL_TEMPLATE")
+	if env == "" {
+		// Don't use this standard. It's here mainly as an example of what
+		// format the templated is expected to look like.
+		return "http://api.tvmaze.com/singlesearch/shows?q=%s&embed=episodes"
+	}
+	return env
 }
