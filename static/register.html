@@ -1,0 +1,38 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <form id="register-form" action="/register" method="post">
+      <input placeholder="username" type="text" name="username">
+      <input placeholder="password" type="password" name="password">
+      <input placeholder="email" type="text" name="email">
+      <input type="submit">
+    </form>
+    <script type='text/javascript'>
+      const form = document.getElementById('register-form');
+      form.addEventListener('submit', (event) => {
+        const data = new FormData(form);
+        const postRepresentation = new URLSearchParams();
+        postRepresentation.set('username', data.get('username'));
+        postRepresentation.set('password', data.get('password'));
+        postRepresentation.set('email', data.get('email'));
+
+        event.preventDefault();
+
+        fetch('/register', {
+          method: 'POST',
+          body: postRepresentation,
+          credentials: 'same-origin',
+        })
+          .then((response) => {
+            if (response.status === 200) {
+              console.log('200');
+            } else {
+              console.log('we got a weird return');
+              console.log(response);
+            }
+          });
+      });
+    </script>
+  </body>
+</html>
