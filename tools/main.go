@@ -17,6 +17,7 @@ func main() {
   	    log.Fatal(err)
 	}
 	http.Handle("/login", httputil.NewSingleHostReverseProxy(rpURL))
+	http.Handle("/register", httputil.NewSingleHostReverseProxy(rpURL))
 
 	http.ListenAndServe(":8081", nil)
 }
