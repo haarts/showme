@@ -6,7 +6,9 @@
     </video>
 
     <script type='text/javascript'>
-        fetch('episode.json')
+        fetch('episode.json', {
+          credentials: 'same-origin',
+        })
           .then(response => response.json())
           .then((episode) => {
             const title = document.querySelector('#title');

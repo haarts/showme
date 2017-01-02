@@ -16,7 +16,9 @@
         return item;
       }
 
-      fetch('shows.json')
+      fetch('shows.json', {
+        credentials: 'same-origin',
+      })
         .then(response => response.json())
         .then((shows) => {
           shows

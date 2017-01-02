@@ -16,7 +16,9 @@
         return item;
       }
 
-      fetch('show.json')
+      fetch('show.json', {
+        credentials: 'same-origin',
+      })
         .then(response => response.json())
         .then((show) => {
           show.season_urls
