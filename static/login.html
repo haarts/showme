@@ -24,12 +24,11 @@
         })
           .then((response) => {
             if (response.status === 200) {
-              console.log('200');
+              window.location = '/shows/';
             } else if (response.status === 401) {
-              console.log('401');
+              window.location = '/login-failed.html';
             } else {
-              console.log('we got a weird return');
-              console.log(response);
+              window.location = '/500.html';
             }
           });
       });

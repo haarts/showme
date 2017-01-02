@@ -26,10 +26,9 @@
         })
           .then((response) => {
             if (response.status === 200) {
-              console.log('200');
+              window.location = '/login.html';
             } else {
-              console.log('we got a weird return');
-              console.log(response);
+              window.location = '/500.html';
             }
           });
       });
