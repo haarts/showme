@@ -1,4 +1,7 @@
 <html>
+  <head>
+    <link rel="stylesheet" href="https://cdn.plyr.io/2.0.11/plyr.css">
+  </head>
   <body>
     <div id='title'>
     </div>
@@ -18,7 +21,9 @@
             const source = document.createElement('source');
             source.setAttribute('src', `${episode.video_url}`);
             player.appendChild(source);
+            plyr.setup();
           });
     </script>
+    <script src="https://cdn.plyr.io/2.0.11/plyr.js"></script>
   </body>
 </html>
