@@ -142,7 +142,7 @@ func episodes(seasonNumber int, show *show) []SingleEpisode {
 				Image:   episode.Image,
 			},
 
-			VideoURL: path.Join(show.path, strconv.Itoa(seasonNumber), episodeVideoFile(
+			VideoURL: documentRoot + path.Join(show.path, strconv.Itoa(seasonNumber), episodeVideoFile(
 				path.Join(show.path, strconv.Itoa(seasonNumber)), episode)),
 			ShowName:     show.Name,
 			SeasonNumber: seasonNumber,

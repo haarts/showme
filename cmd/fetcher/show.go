@@ -48,7 +48,7 @@ func writeShowJSON(show *show) error {
 
 	for _, season := range seasons(show) {
 		if _, err := os.Stat(path.Join(show.path, strconv.Itoa(season))); err == nil {
-			singleShow.SeasonURLs = append(singleShow.SeasonURLs, "/"+show.path+"/"+strconv.Itoa(season))
+			singleShow.SeasonURLs = append(singleShow.SeasonURLs, documentRoot+show.path+"/"+strconv.Itoa(season))
 		}
 	}
 

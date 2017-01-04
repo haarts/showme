@@ -11,6 +11,7 @@ import (
 )
 
 var logLevel int
+var documentRoot string
 
 var showsApp []byte
 var showApp []byte
@@ -20,9 +21,11 @@ var episodeApp []byte
 func init() {
 	const (
 		logLevelUsage = "Set log level (0,1,2,3,4,5, higher is more logging)."
+		documentRootUsage = "Set the document root of the URLs in the to be generated JSON files."
 	)
 
 	flag.IntVar(&logLevel, "log-level", int(log.ErrorLevel), logLevelUsage)
+	flag.StringVar(&documentRoot, "document-root", "/", documentRootUsage)
 }
 
 type commonEpisode struct {

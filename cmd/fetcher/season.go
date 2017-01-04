@@ -96,7 +96,7 @@ func season(number int, show *show) Season {
 				Summary: episode.Summary,
 				Image:   episode.Image,
 			},
-			URL: "/" + path.Join(show.path, strconv.Itoa(number), urlify(episode.Name)),
+			URL: documentRoot + path.Join(show.path, strconv.Itoa(number), urlify(episode.Name)),
 		})
 	}
 

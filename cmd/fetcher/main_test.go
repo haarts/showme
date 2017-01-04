@@ -289,7 +289,7 @@ func TestCreateEpisodeJSON(t *testing.T) {
 	assert.Equal(t, tvMazeShow.Name, episode.ShowName)
 	assert.Equal(t, int(tvMazeShow.Embedded.Episodes[0].Season), episode.SeasonNumber)
 	assert.Equal(t, tvMazeShow.Embedded.Episodes[0].Name, episode.Name)
-	assert.Equal(t, "show1/1/S01E01_bar.webm", episode.VideoURL)
+	assert.Equal(t, "/show1/1/S01E01_bar.webm", episode.VideoURL)
 }
 
 func copyR(src, dest string) {

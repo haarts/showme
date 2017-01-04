@@ -23,7 +23,7 @@ func convertToShowInList(show *show) ShowInList {
 		Name:    show.Name,
 		Summary: show.Summary,
 		Image:   show.Image,
-		URL:     "/" + show.path,
+		URL:     documentRoot + show.path,
 	}
 }
 
