@@ -33,11 +33,11 @@ ready to watch, in your browser.
 shows
 |-- Name
 |    |-- 1
-|    |   |-- Name 1x01-Title.webm
-|    |   +-- Name 1x02-Title.webm
+|    |   |-- Name S01E01-Title.webm
+|    |   +-- Name S01E02-Title.webm
 |    |-- 2
-|    |   |-- Name 1x01-Title.webm
-|    |   +-- Name 1x02-Title.webm
+|    |   |-- Name S02E01-Title.webm
+|    |   +-- Name S02E02-Title.webm
 |
 |-- Other Name
      |-- 1
