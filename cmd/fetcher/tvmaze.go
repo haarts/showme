@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/Sirupsen/logrus"
@@ -39,7 +40,7 @@ type TvMazeClient struct {
 }
 
 func (t TvMazeClient) Find(q string) (*TvMazeShow, error) {
-	query := fmt.Sprintf(t.urlTemplate(), q)
+	query := fmt.Sprintf(t.urlTemplate(), url.QueryEscape(q))
 	contextLogger := t.logger.WithField("url", query)
 	contextLogger.Debug("Querying TVMaze")
 
