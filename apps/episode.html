@@ -18,9 +18,18 @@
             title.appendChild(document.createTextNode(`${episode.show_name} - ${episode.name}`));
 
             const player = document.getElementById('player');
+
             const source = document.createElement('source');
             source.setAttribute('src', `${episode.video_url}`);
             player.appendChild(source);
+
+            const track = document.createElement('track');
+            track.setAttribute('kind', 'captions');
+            track.setAttribute('label', 'English subtitles');
+            track.setAttribute('default', '');
+            track.setAttribute('src', episode.video_url.replace('.webm', '.en.vtt'));
+            player.appendChild(track);
+
             plyr.setup();
           });
     </script>
