@@ -1,1 +1,12 @@
-{"number":1,"name":"Earthfall","summary":"","image":{"medium":"","original":""},"video_url":"/shows/Pioneer One/1/S01E01-Earthfall.webm","show_name":"Pioneer One","season_number":1}
+{
+  "number": 1,
+  "name": "Earthfall",
+  "summary": "",
+  "image": {
+    "medium": "",
+    "original": ""
+  },
+  "video_url": "/shows/Pioneer One/1/S01E01-Earthfall.webm",
+  "show_name": "Pioneer One",
+  "season_number": 1
+}

@@ -1,1 +1,11 @@
-[{"name":"Pioneer One","summary":"\u003cp\u003eA Cold War relic returns amid fears of terrorism but turns out to be a \nforgotten Soviet space mission. What it brings back will have \nimplications for the entire world.\u003c/p\u003e","image":{"medium":"http://static.tvmaze.com/uploads/images/medium_portrait/21/53607.jpg","original":"http://static.tvmaze.com/uploads/images/original_untouched/21/53607.jpg"},"url":"/shows/Pioneer One"}]
+[
+  {
+    "name": "Pioneer One",
+    "summary": "<p>A Cold War relic returns amid fears of terrorism but turns out to be a \nforgotten Soviet space mission. What it brings back will have \nimplications for the entire world.</p>",
+    "image": {
+      "medium": "http://static.tvmaze.com/uploads/images/medium_portrait/21/53607.jpg",
+      "original": "http://static.tvmaze.com/uploads/images/original_untouched/21/53607.jpg"
+    },
+    "url": "/shows/Pioneer One"
+  }
+]
