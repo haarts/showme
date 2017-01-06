@@ -7,7 +7,7 @@ while true; do
   esc=$(printf %q "$original_file")
   echo $esc
   scp -P$2 "$1:./$esc" .
-  transcoded_file=$(echo $(basename "$esc") | sed -e 's/\(mp4\|mkv\|avi\)/webm/')
+  transcoded_file=$(echo $(basename "$esc") | sed -e 's/\.\(mp4\|mkv\|avi\)$/webm/')
   echo $transcoded_file
 
   echo First pass
