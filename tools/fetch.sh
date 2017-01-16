@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 
 while true; do
   start=$(date --iso-8601=seconds)
-  original_file=$(ssh -p$2 $1 ./first.sh)
+  original_file=$(ssh -oStrictHostKeyChecking=no -p$2 $1 ./first.sh)
   echo Found to be converted file: $original_file
   esc=$(printf %q "$original_file")
   echo $esc
