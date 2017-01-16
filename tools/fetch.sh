@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+cd "$(dirname "$0")"
+
 while true; do
   start=$(date --iso-8601=seconds)
   original_file=$(ssh -p$2 $1 ./first.sh)
