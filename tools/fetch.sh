@@ -40,7 +40,8 @@ while true; do
 
   stop_telegraf=$(date +%s)
   elapsed_seconds=$(echo "$stop_telegraf - $start_telegraf" | bc)
-  curl -k "https://$user:$password@$server:$port/write?db=telegraf" --data-binary "elapsed_seconds,host=$(hostname) value=$elapsed_seconds"
+  curl --insecure "https://$user:$password@$server:$port/write?db=telegraf" \
+    --data-binary "elapsed_seconds,host=$(hostname) value=$elapsed_seconds"
 
   stop=$(date --iso-8601=seconds)
   echo $start,$stop,$original_file >> counter-$(hostname).csv
