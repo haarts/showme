@@ -1,2 +1,4 @@
 cmd/conjoiner/conjoiner
 cmd/showme/showme
+
+tools/secrets.sh
