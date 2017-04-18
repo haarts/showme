@@ -1,9 +1,12 @@
 #!/bin/bash -e
 
+source secrets.sh
 cd "$(dirname "$0")"
 
 while true; do
+  start_telegraf=$(date +%s)
   start=$(date --iso-8601=seconds)
+
   original_file=$(ssh -oStrictHostKeyChecking=no -p$2 $1 ./first.sh)
   echo Found to be converted file: $original_file
   esc=$(printf %q "$original_file")
@@ -34,6 +37,11 @@ while true; do
   scp -P$2 "$transcoded_file" "$1:./$(dirname "$esc")/$transcoded_file"
   rm "$transcoded_file"
   rm "$(basename "$original_file")"
+
+  stop_telegraf=$(date +%s)
+  elapsed_seconds=$(echo "$stop_telegraf - $start_telegraf" | bc)
+  curl -k "https://$user:$password@$server:$port/write?db=telegraf" --data-binary "elapsed_seconds,host=$(hostname) value=$elapsed_seconds"
+
   stop=$(date --iso-8601=seconds)
   echo $start,$stop,$original_file >> counter-$(hostname).csv
 done
